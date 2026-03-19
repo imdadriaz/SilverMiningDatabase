@@ -1,8 +1,10 @@
 -- ===============
 -- Create DB
 -- ===============
+
 CREATE DATABASE SilverMiningDatabase;
 USE SilverMiningDatabase;
+
 
 -- ===============
 -- Create Tables
@@ -41,7 +43,6 @@ CREATE TABLE RANKINGREPORT(
 	Ticker VARCHAR(10) NOT NULL,
     Score DECIMAL(5,2) NOT NULL,
     RankPosition INT NOT NULL,
-    
     CONSTRAINT RANKINGREPORT_PK PRIMARY KEY (Ticker),
     CONSTRAINT RANKINGREPORT_FK
 		FOREIGN KEY (Ticker)
@@ -49,16 +50,14 @@ CREATE TABLE RANKINGREPORT(
 );
 
 CREATE TABLE FINMETRICS(
-
 	Ticker VARCHAR(10) NOT NULL,
     AISC DECIMAL(12,2) NOT NULL,
     PEG	DECIMAL(6,2) NOT NULL,
     TotalDebt DECIMAL(15,2) NOT NULL,
     DebtToEquity DECIMAL(6,2) NOT NULL,
     Revenue DECIMAL(15,2) NOT NULL,
-    EBITDA DECIMAL (15,2) NOT NULL,
+    EBITDA DECIMAL(15,2) NOT NULL,
     LastUpdatedBy INT,
-    
     CONSTRAINT FINMETRICS_PK PRIMARY KEY (Ticker),
     CONSTRAINT FINMETRICS_FK_TICK
 		FOREIGN KEY (Ticker)
@@ -75,8 +74,10 @@ CREATE TABLE STOCKPRICE (
     PreviousClose DECIMAL(10,2),
     FiftyTwoWeekHigh DECIMAL(10,2),
     FiftyTwoWeekLow DECIMAL(10,2),
-    PRIMARY KEY (Ticker, Date_Updated),
-    FOREIGN KEY (Ticker) REFERENCES COMPANY(Ticker)
+    CONSTRAINT STOCKPRICE_PK PRIMARY KEY (Ticker, Date_Updated),
+    CONSTRAINT STOCKPRICE_FK_TICK
+        FOREIGN KEY (Ticker)
+        REFERENCES COMPANY(Ticker)
 );
 
 CREATE TABLE PRODUCTIONDATA (
@@ -118,6 +119,18 @@ CREATE TABLE UPDATESCOMPANY (
 		REFERENCES COMPANY(Ticker)
 );
 
+CREATE TABLE UPDATESFINMETRICS (
+    AdminID INT NOT NULL,
+    Ticker VARCHAR(10) NOT NULL,
+    CONSTRAINT UPDATESFINMETRICS_PK PRIMARY KEY (AdminID, Ticker),
+    CONSTRAINT UPDATESFINMETRICS_FK_USER
+		FOREIGN KEY (AdminID) 
+        REFERENCES USERTAB(User_ID),
+	CONSTRAINT UPDATESFINMETRICS_FK_TICK
+		FOREIGN KEY (Ticker) 
+		REFERENCES COMPANY(Ticker)
+);
+
 CREATE TABLE UPDATESSTOCKPRICE (
     AdminID INT NOT NULL,
     Ticker VARCHAR(10) NOT NULL,
@@ -140,8 +153,8 @@ CREATE TABLE UPDATESPRODUCTIONDATA (
 		FOREIGN KEY (AdminID) 
         REFERENCES USERTAB(User_ID),
     CONSTRAINT UPDATESPRODUCTIONDATA_FK_TICK
-    FOREIGN KEY (Ticker) 
-    REFERENCES COMPANY(Ticker)
+        FOREIGN KEY (Ticker) 
+        REFERENCES COMPANY(Ticker)
 );
 
 
@@ -161,13 +174,11 @@ VALUES
 -- 3 = Jade (Investor)
 
 
-
 INSERT INTO COMPANY (Ticker, Company_Name)
 VALUES
 ('PAAS', 'Pan American Silver'),
 ('AG', 'First Majestic Silver'),
 ('FSM', 'Fortuna Silver Mines');
-
 
 
 INSERT INTO FAVOURITE (Investor_ID, Ticker, DateFavourited)
@@ -177,13 +188,11 @@ VALUES
 (3, 'FSM', '2024-03-01');
 
 
-
 INSERT INTO RANKINGREPORT (Ticker, Score, RankPosition)
 VALUES
 ('PAAS', 88.50, 1),
 ('AG', 75.20, 2),
 ('FSM', 69.80, 3);
-
 
 
 INSERT INTO FINMETRICS (Ticker, AISC, PEG, TotalDebt, DebtToEquity, Revenue, EBITDA, LastUpdatedBy)
@@ -192,12 +201,10 @@ VALUES
 ('AG', 17.20, 1.80, 300000000, 0.50, 1200000000, 400000000, 2);
 
 
-
 INSERT INTO STOCKPRICE (Ticker, Date_Updated, PreviousOpen, PreviousClose, FiftyTwoWeekHigh, FiftyTwoWeekLow)
 VALUES
 ('PAAS', '2024-03-01', 18.50, 19.20, 24.00, 14.00),
 ('AG', '2024-03-01', 7.80, 8.10, 12.00, 6.00);
-
 
 
 INSERT INTO PRODUCTIONDATA (Ticker, Period, SilverOuncesProduced, Notes, LastUpdatedBy)
@@ -206,12 +213,10 @@ VALUES
 ('AG', 'Q4-2023', 3100000, 'Lower output due to maintenance.', 2);
 
 
-
 INSERT INTO VIEWSDETAILS (InvestorID, Ticker)
 VALUES
 (1, 'PAAS'),
 (3, 'FSM');
-
 
 
 INSERT INTO UPDATESCOMPANY (AdminID, Ticker)
@@ -220,12 +225,16 @@ VALUES
 (2, 'AG');
 
 
+INSERT INTO UPDATESFINMETRICS (AdminID, Ticker)
+VALUES
+(2, 'PAAS'),
+(2, 'AG');
+
 
 INSERT INTO UPDATESSTOCKPRICE (AdminID, Ticker, Date_Updated)
 VALUES
 (2, 'PAAS', '2024-03-01'),
 (2, 'AG', '2024-03-01');
-
 
 
 INSERT INTO UPDATESPRODUCTIONDATA (AdminID, Ticker, Period)
