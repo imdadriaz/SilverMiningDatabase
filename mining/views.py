@@ -1,0 +1,409 @@
+"""
+Views for the Silver Mining Database.
+All views return JsonResponse.
+Session based auth stores user_id and permission_level after login.
+"""
+
+import json
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
+from django.utils import timezone
+
+from .models import (
+    Usertab, Company, Favourite, Rankingreport,
+    Finmetrics, Stockprice, Productiondata,
+    Viewsdetails, Updatescompany, Updatesstockprice, Updatesproductiondata,
+)
+from .form import (
+    LoginForm, RegisterForm,
+    CompanyForm, CompanyUpdateForm,
+    FinmetricsForm, FinmetricsUpdateForm,
+    StockpriceForm,
+    ProductiondataForm, ProductiondataUpdateForm,
+    CompanyFilterForm,
+)
+from .utils import (
+    get_current_user, login_user, logout_user, rebuild_rankings,
+    login_required, admin_required, investor_required,
+)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# HELPERS
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Read incoming data from the request (works with both JSON and form encoded POST data)
+def _body(request):
+    ct = request.content_type or ''
+    if 'application/json' in ct:
+        try:
+            return json.loads(request.body)
+        except json.JSONDecodeError:
+            return {}
+    return request.POST.dict()
+
+#Flatten form errors into a dict
+def _form_errors(form):
+    return {field: errs for field, errs in form.errors.items()}
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# AUTH
+# ══════════════════════════════════════════════════════════════════════════════
+
+@csrf_exempt
+@require_http_methods(["POST"])
+# POST { email, password }
+# 200 { user_id, name, permission_level }
+# 400 validation errors
+# 401 bad credentials or pending approval
+def login_view(request):
+    form = LoginForm(_body(request))
+    if not form.is_valid():
+        return JsonResponse({'errors': _form_errors(form)}, status=400)
+
+    email = form.cleaned_data['email']
+    password = form.cleaned_data['password']
+
+    try:
+        user = Usertab.objects.get(user_email=email)
+    except Usertab.DoesNotExist:
+        return JsonResponse({'error': 'Invalid email or password.'}, status=401)
+
+    if not user.check_password(password):
+        return JsonResponse({'error': 'Invalid email or password.'}, status=401)
+
+    if user.is_investor and not user.is_active:
+        return JsonResponse({'error': 'Your account is pending admin approval.'}, status=401)
+
+    login_user(request, user)
+
+    return JsonResponse({
+        'user_id':user.user_id,
+        'name':f"{user.user_fname} {user.user_lname}",
+        'permission_level':user.permission_level,
+    })
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+# POST 200 { message }
+def logout_view(request):
+    logout_user(request)
+    return JsonResponse({'message': 'Logged out successfully.'})
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+# POST { first_name, last_name, email, password, confirm_password }
+# 201 { message } account starts inactive until admin approves
+# 400 validation errors
+def register_view(request):
+    form = RegisterForm(_body(request))
+    if not form.is_valid():
+        return JsonResponse({'errors': _form_errors(form)}, status=400)
+
+    user = Usertab(
+        user_fname = form.cleaned_data['first_name'],
+        user_lname = form.cleaned_data['last_name'],
+        user_email = form.cleaned_data['email'],
+        permission_level = Usertab.PermissionLevel.INVESTOR,
+        is_active = False,
+    )
+    user.set_password(form.cleaned_data['password'])
+    user.save()
+
+    return JsonResponse({'message': 'Registration successful. Please wait for admin approval before logging in.'}, status = 201,)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# SHARED
+# ══════════════════════════════════════════════════════════════════════════════
+
+@login_required
+@require_http_methods(["GET"])
+# GET 200 { permission_level, redirect_to }
+# tells the frontend whether to show the admin or investor interface
+def dashboard(request):
+    level = request.session.get('permission_level')
+    return JsonResponse({'permission_level': level,'redirect_to': 'admin_dashboard' if level == 'Admin' else 'company_list'})
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# INVESTOR VIEWS
+# ══════════════════════════════════════════════════════════════════════════════
+
+@investor_required
+@require_http_methods(["GET"])
+# 
+def company_list(request):
+    form = CompanyFilterForm(request.GET)
+    if not form.is_valid():
+        return JsonResponse({'errors': _form_errors(form)}, status=400)
+
+    cd = form.cleaned_data
+
+    qs = (Rankingreport.objects.select_related('ticker', 'ticker__finmetrics').order_by('rank_position'))
+
+    search = cd.get('search', '').strip()
+    if search:
+        qs = qs.filter(ticker__ticker__icontains=search) | \
+             qs.filter(ticker__company_name__icontains=search)
+
+    if cd.get('max_aisc') is not None:
+        qs = qs.filter(ticker__finmetrics__aisc__lte=cd['max_aisc'])
+    if cd.get('max_debt_equity') is not None:
+        qs = qs.filter(ticker__finmetrics__debt_to_equity__lte=cd['max_debt_equity'])
+    if cd.get('max_peg') is not None:
+        qs = qs.filter(ticker__finmetrics__peg__lte=cd['max_peg'])
+
+    results = []
+    for rr in qs:
+        fm = getattr(rr.ticker, 'finmetrics', None)
+        results.append({
+            'ticker':rr.ticker.ticker,
+            'company_name':rr.ticker.company_name,
+            'rank_position':rr.rank_position,
+            'score':float(rr.score),
+            'aisc':float(fm.aisc) if fm else None,
+            'peg':float(fm.peg) if fm else None,
+            'debt_to_equity': float(fm.debt_to_equity) if fm else None,
+        })
+
+    return JsonResponse({'companies': results})
+
+
+@investor_required
+@require_http_methods(["GET"])
+#GET /companies/<ticker>/
+#200 full company profile
+#404 if ticker not found
+def company_detail(request, ticker):
+    try:
+        company = Company.objects.get(pk=ticker)
+    except Company.DoesNotExist:
+        return JsonResponse({'error': f"Company '{ticker}' not found."}, status = 404)
+
+    user = get_current_user(request)
+
+    # Record the view
+    Viewsdetails.objects.get_or_create(investor=user, ticker=company)
+
+    # Ranking
+    try:
+        rr = Rankingreport.objects.get(ticker=company)
+        ranking = {'score': float(rr.score), 'rank_position': rr.rank_position}
+    except Rankingreport.DoesNotExist:
+        ranking = None
+
+    # Financial metrics
+    try:
+        fm = Finmetrics.objects.get(ticker=company)
+        fin_metrics = {
+            'aisc':float(fm.aisc),
+            'peg':float(fm.peg),
+            'total_debt':float(fm.total_debt),
+            'debt_to_equity':float(fm.debt_to_equity),
+            'revenue':float(fm.revenue),
+            'ebitda':float(fm.ebitda),
+        }
+    except Finmetrics.DoesNotExist:
+        fin_metrics = None
+
+    # Stock prices most recent first
+    stock_prices = [
+        {
+            'date_updated':str(sp.date_updated),
+            'previous_open':float(sp.previous_open) if sp.previous_open else None,
+            'previous_close':float(sp.previous_close) if sp.previous_close else None,
+            'fifty_two_week_high':float(sp.fifty_two_week_high) if sp.fifty_two_week_high else None,
+            'fifty_two_week_low':float(sp.fifty_two_week_low) if sp.fifty_two_week_low  else None,
+        }
+        for sp in Stockprice.objects.filter(ticker = company).order_by('-date_updated')
+    ]
+
+    # Production data most recent period first
+    production = [
+        {
+            'period':pd.period,
+            'silver_ounces_produced':float(pd.silver_ounces_produced) if pd.silver_ounces_produced else None,
+            'notes':pd.notes,
+        }
+        for pd in Productiondata.objects.filter(ticker=company).order_by('-period')
+    ]
+
+    # Is this company favourited by the investor
+    is_favourite = Favourite.objects.filter(investor=user, ticker=company).exists()
+
+    return JsonResponse({
+        'ticker':          company.ticker,
+        'company_name':    company.company_name,
+        'ranking':         ranking,
+        'fin_metrics':     fin_metrics,
+        'stock_prices':    stock_prices,
+        'production_data': production,
+        'is_favourite':    is_favourite,
+    })
+
+
+@csrf_exempt
+@investor_required
+@require_http_methods(["POST"])
+#POST /companies/<ticker>/favourite/
+#200 { is_favourite, message }
+def toggle_favourite(request, ticker):
+    try:
+        company = Company.objects.get(pk = ticker)
+    except Company.DoesNotExist:
+        return JsonResponse({'error': f"Company '{ticker}' not found."}, status = 404)
+
+    user = get_current_user(request)
+    fav  = Favourite.objects.filter(investor = user, ticker = company)
+
+    if fav.exists():
+        fav.delete()
+        return JsonResponse({
+            'is_favourite': False,
+            'message': f"{company.company_name} removed from favourites.",
+        })
+    else:
+        Favourite.objects.create(
+            investor = user,
+            ticker = company,
+            date_favourited = timezone.now().date(),
+        )
+        return JsonResponse({
+            'is_favourite': True,
+            'message': f"{company.company_name} added to favourites.",
+        })
+
+
+@investor_required
+@require_http_methods(["GET"])
+#GET /favourites/
+#200 { favourites: [ { ticker, company_name, date_favourited } ] }
+def favourites_list(request):
+    user = get_current_user(request)
+    favs = (
+        Favourite.objects
+        .filter(investor=user)
+        .select_related('ticker')
+        .order_by('-date_favourited')
+    )
+    return JsonResponse({
+        'favourites': [
+            {
+                'ticker': f.ticker.ticker,
+                'company_name': f.ticker.company_name,
+                'date_favourited': str(f.date_favourited),
+            }
+            for f in favs
+        ]
+    })
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# ADMIN DASHBOARD
+# ══════════════════════════════════════════════════════════════════════════════
+
+@admin_required
+@require_http_methods(["GET"])
+def admin_dashboard(request):
+    return JsonResponse({
+        'total_companies': Company.objects.count(),
+        'total_investors': Usertab.objects.filter(permission_level='Investor').count(),
+        'pending_approvals': Usertab.objects.filter(permission_level='Investor', is_active=False).count(),
+    })
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# ADMIN — COMPANY MANAGEMENT
+# ══════════════════════════════════════════════════════════════════════════════
+
+@admin_required
+@require_http_methods(["GET"])
+def admin_companies(request):
+    companies = list(Company.objects.values('ticker', 'company_name').order_by('ticker'))
+    return JsonResponse({'companies': companies})
+
+
+@csrf_exempt
+@admin_required
+@require_http_methods(["POST"])
+#POST { ticker, company_name }
+#201 { ticker, company_name }
+def admin_company_add(request):
+    form = CompanyForm(_body(request))
+    if not form.is_valid():
+        return JsonResponse({'errors': _form_errors(form)}, status = 400)
+
+    admin   = get_current_user(request)
+    company = form.save()
+    Updatescompany.objects.get_or_create(admin=admin, ticker=company)
+
+    return JsonResponse({'ticker': company.ticker, 'company_name': company.company_name}, status = 201,)
+
+
+@csrf_exempt
+@admin_required
+@require_http_methods(["POST"])
+def admin_company_edit(request, ticker):
+    """
+    POST { company_name }
+    200 { ticker, company_name }
+    404 if not found
+    """
+    try:
+        company = Company.objects.get(pk = ticker)
+    except Company.DoesNotExist:
+        return JsonResponse({'error': f"Company '{ticker}' not found."}, status = 404)
+
+    form = CompanyUpdateForm(_body(request), instance=company)
+    if not form.is_valid():
+        return JsonResponse({'errors': _form_errors(form)}, status = 400)
+
+    admin = get_current_user(request)
+    company = form.save()
+    Updatescompany.objects.get_or_create(admin=admin, ticker=company)
+
+    return JsonResponse({'ticker': company.ticker, 'company_name': company.company_name})
+
+
+@csrf_exempt
+@admin_required
+@require_http_methods(["POST"])
+def admin_company_delete(request, ticker):
+    try:
+        company = Company.objects.get(pk = ticker)
+    except Company.DoesNotExist:
+        return JsonResponse({'error': f"Company '{ticker}' not found."}, status = 404)
+
+    company.delete()
+    return JsonResponse({'message': f"Company '{ticker}' and all related data deleted."})
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# ADMIN — FINANCIAL METRICS
+# ══════════════════════════════════════════════════════════════════════════════
+
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# ADMIN — STOCK PRICES
+# ══════════════════════════════════════════════════════════════════════════════
+
+
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# ADMIN — PRODUCTION DATA
+# ══════════════════════════════════════════════════════════════════════════════
+
+
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# ADMIN — INVESTOR MANAGEMENT
+# ══════════════════════════════════════════════════════════════════════════════
+

@@ -1,0 +1,4 @@
+Django>=4.2,<5.0 #django framework
+mysqlclient>=2.2.0 #how django will communicate to MySQL database
+bcrypt>=4.0.0 #used to securely hash and check passwords
+
