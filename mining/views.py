@@ -20,7 +20,7 @@ from .form import (
     LoginForm, RegisterForm,
     CompanyForm, CompanyUpdateForm,
     FinmetricsForm, FinmetricsUpdateForm,
-    StockpriceForm,
+    StockpriceForm, StockpriceUpdateForm,
     ProductiondataForm, ProductiondataUpdateForm,
     CompanyFilterForm,
 )
@@ -391,7 +391,8 @@ def admin_company_delete(request, ticker):
 @admin_required
 @require_http_methods(["GET"])
 def admin_finmetrics(request):
-    finmetrics = list(Finmetrics.objects.values('ticker', 'score', 'rank_position').order_by('ticker'))
+    finmetrics = list(Finmetrics.objects.values('ticker', 'aisc', 'peg', 'total_debt', 
+                                                'debt_to_equity', 'revenue', 'ebitda').order_by('ticker'))
     return JsonResponse({'finmetrics': finmetrics})
 
 
@@ -455,16 +456,68 @@ def admin_finmetrics_delete(request, ticker):
 # ADMIN — STOCK PRICES
 # ══════════════════════════════════════════════════════════════════════════════
 
-# TODO: admin_stockprices
+@admin_required
+@require_http_methods(["GET"])
+def admin_stockprices(request):
+    stockprices = list(Stockprice.objects.values('ticker', 'date_updated','previous_open', 'previous_close', 
+                                                 'fifty_two_week_high', 'fifty_two_week_low').order_by('ticker'))
+    return JsonResponse({'stockprices': stockprices})
 
 
-# TODO: admin_stockprice_add
+@csrf_exempt
+@admin_required
+@require_http_methods(["POST"])
+#POST { ticker, date_updated, previous_open, previous_close, fifty_two_week_high, fifty_two_week_low }
+#201 { ticker, date_updated, previous_open, previous_close, fifty_two_week_high, fifty_two_week_low }
+def admin_stockprice_add(request):
+    form = StockpriceForm(_body(request))
+    if not form.is_valid():
+        return JsonResponse({'errors': _form_errors(form)}, status = 400)
+
+    admin   = get_current_user(request)
+    stockprice = form.save()
+    Updatesstockprice.objects.get_or_create(admin=admin, ticker=stockprice, date_updated=stockprice)
+
+    return JsonResponse({'ticker': stockprice.ticker, 'date_updated': stockprice.date_updated, 
+                         'previous_open': stockprice.previous_open, 'previous_close': stockprice.previous_close, 
+                         'fifty_two_week_high': stockprice.fifty_two_week_high, 
+                         'fifty_two_week_low': stockprice.fifty_two_week_low}, status = 201,)
 
 
-# TODO: admin_stockprice_edit
+@csrf_exempt
+@admin_required
+@require_http_methods(["POST"])
+def admin_stockprice_edit(request, ticker, date_updated):
+    try:
+        stockprice = Stockprice.objects.get(pk = (ticker, date_updated))
+    except Stockprice.DoesNotExist:
+        return JsonResponse({'error': f"Company '{ticker}' updated at '{date_updated}' not found."}, status = 404)
+
+    form = StockpriceUpdateForm(_body(request), instance=stockprice)
+    if not form.is_valid():
+        return JsonResponse({'errors': _form_errors(form)}, status = 400)
+
+    admin = get_current_user(request)
+    stockprice = form.save()
+    Updatesstockprice.objects.get_or_create(admin=admin, ticker=stockprice, date_updated=stockprice)
+
+    return JsonResponse({'ticker': stockprice.ticker, 'date_updated': stockprice.date_updated, 
+                         'previous_open': stockprice.previous_open, 'previous_close': stockprice.previous_close, 
+                         'fifty_two_week_high': stockprice.fifty_two_week_high, 
+                         'fifty_two_week_low': stockprice.fifty_two_week_low})
 
 
-# TODO: admin_stockprice_delete
+@csrf_exempt
+@admin_required
+@require_http_methods(["POST"])
+def admin_stockprice_delete(request, ticker):
+    try:
+        stockprice = Stockprice.objects.get(pk = (ticker, date_updated))
+    except Stockprice.DoesNotExist:
+        return JsonResponse({'error': f"Company '{ticker}' updated at '{date_updated}' not found."}, status = 404)
+
+    stockprice.delete()
+    return JsonResponse({'message': f"Company '{ticker}' stock price deleted."})
 
 
 # ══════════════════════════════════════════════════════════════════════════════

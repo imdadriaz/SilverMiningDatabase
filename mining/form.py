@@ -125,6 +125,36 @@ class StockpriceForm(forms.ModelForm):
         if high and low and high < low:
             raise forms.ValidationError("52-week high cannot be less than 52-week low.")
         return cleaned
+    
+#validates updating existing stock price (checks values are positive)
+class StockpriceUpdateForm(forms.ModelForm):
+    class Meta:
+        model = Stockprice
+        fields = ['previous_open', 'previous_close','fifty_two_week_high', 'fifty_two_week_low']
+
+    def clean_previous_open(self):
+        val = self.cleaned_data['previous_open']
+        if val <= 0:
+            raise forms.ValidationError("Previous open must be a positive value.")
+        return val
+
+    def clean_previous_close(self):
+        val = self.cleaned_data['previous_close']
+        if val <= 0:
+            raise forms.ValidationError("Previous close must be a positive value.")
+        return val
+
+    def clean_fifty_two_week_high(self):
+        val = self.cleaned_data['fifty_two_week_high']
+        if val <= 0:
+            raise forms.ValidationError("52 week high must be a positive value.")
+        return val
+
+    def clean_fifty_two_week_low(self):
+        val = self.cleaned_data['fifty_two_week_low']
+        if val <= 0:
+            raise forms.ValidationError("52 week low must be a positive value.")
+        return val
 
 
 # ─────────────────────────────────────────────────────────────────────────────

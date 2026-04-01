@@ -136,8 +136,8 @@ class Finmetrics(models.Model):
 # ─────────────────────────────────────────────────────────────────────────────
 
 class Stockprice(models.Model):
-    ticker              = models.ForeignKey(Company, on_delete=models.CASCADE, db_column = 'Ticker', related_name = 'stock_prices')
-    date_updated = models.DateField(db_column='Date_Updated')
+    ticker              = models.ForeignKey(Company, on_delete=models.CASCADE, primary_key=True, db_column = 'Ticker', related_name = 'stock_prices')
+    date_updated = models.DateField(primary_key=True, db_column='Date_Updated')
     previous_open = models.DecimalField(max_digits = 10, decimal_places = 2, null=True, blank=True, db_column = 'PreviousOpen')
     previous_close = models.DecimalField(max_digits = 10, decimal_places = 2, null=True, blank=True, db_column = 'PreviousClose')
     fifty_two_week_high = models.DecimalField(max_digits = 10, decimal_places = 2, null=True, blank=True, db_column = 'FiftyTwoWeekHigh')
