@@ -198,6 +198,20 @@ class Updatescompany(models.Model):
         db_table = 'UPDATESCOMPANY'
         managed = False
         unique_together = (('admin', 'ticker'),)
+        
+
+# ─────────────────────────────────────────────────────────────────────────────
+# UPDATESFINMETRICS
+# ─────────────────────────────────────────────────────────────────────────────
+
+class Updatesfinmetrics(models.Model):
+    admin  = models.ForeignKey(Usertab, on_delete = models.CASCADE, db_column ='AdminID', related_name = 'updated_fin_metrics')
+    ticker = models.ForeignKey(Company, on_delete = models.CASCADE, db_column ='Ticker')
+
+    class Meta:
+        db_table = 'UPDATESFINMETRICS'
+        managed = False
+        unique_together = (('admin', 'ticker'),)
 
 
 # ─────────────────────────────────────────────────────────────────────────────

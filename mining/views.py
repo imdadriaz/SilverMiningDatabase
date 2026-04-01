@@ -13,7 +13,8 @@ from django.utils import timezone
 from .models import (
     Usertab, Company, Favourite, Rankingreport,
     Finmetrics, Stockprice, Productiondata,
-    Viewsdetails, Updatescompany, Updatesstockprice, Updatesproductiondata,
+    Viewsdetails, Updatescompany, Updatesfinmetrics,
+    Updatesstockprice, Updatesproductiondata,
 )
 from .form import (
     LoginForm, RegisterForm,
@@ -387,23 +388,112 @@ def admin_company_delete(request, ticker):
 # ADMIN — FINANCIAL METRICS
 # ══════════════════════════════════════════════════════════════════════════════
 
+@admin_required
+@require_http_methods(["GET"])
+def admin_finmetrics(request):
+    finmetrics = list(Finmetrics.objects.values('ticker', 'score', 'rank_position').order_by('ticker'))
+    return JsonResponse({'finmetrics': finmetrics})
+
+
+@csrf_exempt
+@admin_required
+@require_http_methods(["POST"])
+#POST { ticker, aisc, peg, total_debt, debt_to_equity, revenue, abitda }
+#201 { ticker, aisc, peg, total_debt, debt_to_equity, revenue, abitda }
+def admin_finmetrics_add(request):
+    form = FinmetricsForm(_body(request))
+    if not form.is_valid():
+        return JsonResponse({'errors': _form_errors(form)}, status = 400)
+
+    admin   = get_current_user(request)
+    finmetrics = form.save()
+    Updatesfinmetrics.objects.get_or_create(admin=admin, ticker=finmetrics)
+
+    return JsonResponse({'ticker': finmetrics.ticker, 'aisc': finmetrics.aisc, 
+                         'peg': finmetrics.peg, 'total_debt': finmetrics.total_debt,
+                         'debt_to_equity': finmetrics.debt_to_equity, 
+                         'revenue': finmetrics.revenue, 'ebitda': finmetrics.ebitda}, status = 201,)
+
+
+@csrf_exempt
+@admin_required
+@require_http_methods(["POST"])
+def admin_finmetrics_edit(request, ticker):
+    try:
+        finmetrics = Finmetrics.objects.get(pk = ticker)
+    except Finmetrics.DoesNotExist:
+        return JsonResponse({'error': f"Company '{ticker}' not found."}, status = 404)
+
+    form = FinmetricsUpdateForm(_body(request), instance=finmetrics)
+    if not form.is_valid():
+        return JsonResponse({'errors': _form_errors(form)}, status = 400)
+
+    admin = get_current_user(request)
+    finmetrics = form.save()
+    Updatesfinmetrics.objects.get_or_create(admin=admin, ticker=finmetrics)
+
+    return JsonResponse({'ticker': finmetrics.ticker, 'aisc': finmetrics.aisc, 
+                         'peg': finmetrics.peg, 'total_debt': finmetrics.total_debt,
+                         'debt_to_equity': finmetrics.debt_to_equity, 
+                         'revenue': finmetrics.revenue, 'ebitda': finmetrics.ebitda})
+
+
+@csrf_exempt
+@admin_required
+@require_http_methods(["POST"])
+def admin_finmetrics_delete(request, ticker):
+    try:
+        finmetrics = Finmetrics.objects.get(pk = ticker)
+    except Finmetrics.DoesNotExist:
+        return JsonResponse({'error': f"Company '{ticker}' not found."}, status = 404)
+
+    finmetrics.delete()
+    return JsonResponse({'message': f"Company '{ticker}' and all related data deleted."})
 
 
 # ══════════════════════════════════════════════════════════════════════════════
 # ADMIN — STOCK PRICES
 # ══════════════════════════════════════════════════════════════════════════════
 
+# TODO: admin_stockprices
 
+
+# TODO: admin_stockprice_add
+
+
+# TODO: admin_stockprice_edit
+
+
+# TODO: admin_stockprice_delete
 
 
 # ══════════════════════════════════════════════════════════════════════════════
 # ADMIN — PRODUCTION DATA
 # ══════════════════════════════════════════════════════════════════════════════
 
+# TODO: admin_production
 
+
+# TODO: admin_production_add
+
+
+# TODO: admin_production_edit
+
+
+# TODO: admin_production_delete
 
 
 # ══════════════════════════════════════════════════════════════════════════════
 # ADMIN — INVESTOR MANAGEMENT
 # ══════════════════════════════════════════════════════════════════════════════
 
+# TODO: admin_investors
+
+
+# TODO: admin_investor_approve
+
+
+# TODO: admin_investor_deactivate
+
+
+# TODO: admin_investor_delete
