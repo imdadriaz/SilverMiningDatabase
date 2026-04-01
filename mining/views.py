@@ -449,7 +449,7 @@ def admin_finmetrics_delete(request, ticker):
         return JsonResponse({'error': f"Company '{ticker}' not found."}, status = 404)
 
     finmetrics.delete()
-    return JsonResponse({'message': f"Company '{ticker}' and all related data deleted."})
+    return JsonResponse({'message': f"Company '{ticker}' financial metrics deleted."})
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -510,7 +510,7 @@ def admin_stockprice_edit(request, ticker, date_updated):
 @csrf_exempt
 @admin_required
 @require_http_methods(["POST"])
-def admin_stockprice_delete(request, ticker):
+def admin_stockprice_delete(request, ticker, date_updated):
     try:
         stockprice = Stockprice.objects.get(pk = (ticker, date_updated))
     except Stockprice.DoesNotExist:
@@ -524,16 +524,66 @@ def admin_stockprice_delete(request, ticker):
 # ADMIN — PRODUCTION DATA
 # ══════════════════════════════════════════════════════════════════════════════
 
-# TODO: admin_production
+@admin_required
+@require_http_methods(["GET"])
+def admin_production(request):
+    productiondata = list(Productiondata.objects.values('ticker', 'period', 'silver_ounces_produced', 
+                                                        'notes').order_by('ticker'))
+    return JsonResponse({'productiondata': productiondata})
 
 
-# TODO: admin_production_add
+@csrf_exempt
+@admin_required
+@require_http_methods(["POST"])
+#POST { ticker, period, silver_ounces_produced, notes }
+#201 { ticker, period, silver_ounces_produced, notes }
+def admin_production_add(request):
+    form = ProductiondataForm(_body(request))
+    if not form.is_valid():
+        return JsonResponse({'errors': _form_errors(form)}, status = 400)
+
+    admin   = get_current_user(request)
+    productiondata = form.save()
+    Updatesproductiondata.objects.get_or_create(admin=admin, ticker=productiondata, period=productiondata)
+
+    return JsonResponse({'ticker': productiondata.ticker, 'period': productiondata.period, 
+                         'silver_ounces_produced': productiondata.silver_ounces_produced, 
+                         'notes': productiondata.notes}, status = 201,)
 
 
-# TODO: admin_production_edit
+@csrf_exempt
+@admin_required
+@require_http_methods(["POST"])
+def admin_production_edit(request, ticker, period):
+    try:
+        productiondata = Productiondata.objects.get(pk = (ticker, period))
+    except Productiondata.DoesNotExist:
+        return JsonResponse({'error': f"Company '{ticker}' with period '{period}' not found."}, status = 404)
+
+    form = ProductiondataUpdateForm(_body(request), instance=productiondata)
+    if not form.is_valid():
+        return JsonResponse({'errors': _form_errors(form)}, status = 400)
+
+    admin = get_current_user(request)
+    productiondata = form.save()
+    Updatesproductiondata.objects.get_or_create(admin=admin, ticker=productiondata, period=productiondata)
+
+    return JsonResponse({'ticker': productiondata.ticker, 'period': productiondata.period, 
+                         'silver_ounces_produced': productiondata.silver_ounces_produced, 
+                         'notes': productiondata.notes})
 
 
-# TODO: admin_production_delete
+@csrf_exempt
+@admin_required
+@require_http_methods(["POST"])
+def admin_production_delete(request, ticker, period):
+    try:
+        productiondata = Productiondata.objects.get(pk = (ticker, period))
+    except Productiondata.DoesNotExist:
+        return JsonResponse({'error': f"Company '{ticker}' with period '{period}' not found."}, status = 404)
+
+    productiondata.delete()
+    return JsonResponse({'message': f"Company '{ticker}' production data deleted."})
 
 
 # ══════════════════════════════════════════════════════════════════════════════

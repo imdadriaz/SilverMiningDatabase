@@ -157,8 +157,8 @@ class Stockprice(models.Model):
 # ─────────────────────────────────────────────────────────────────────────────
 
 class Productiondata(models.Model):
-    ticker = models.ForeignKey(Company, on_delete = models.CASCADE, db_column = 'Ticker', related_name = 'production_records')
-    period = models.CharField(max_length = 20, db_column = 'Period')
+    ticker = models.ForeignKey(Company, on_delete = models.CASCADE, primary_key=True, db_column = 'Ticker', related_name = 'production_records')
+    period = models.CharField(max_length = 20, primary_key=True, db_column = 'Period')
     silver_ounces_produced = models.DecimalField(max_digits = 15, decimal_places = 2, null=True, blank=True, db_column = 'SilverOuncesProduced')
     notes = models.TextField(null=True, blank=True, db_column = 'Notes')
     last_updated_by = models.ForeignKey(Usertab, on_delete = models.SET_NULL, null=True, blank=True, db_column = 'LastUpdatedBy', related_name = 'production_updated')
