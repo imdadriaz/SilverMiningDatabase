@@ -590,13 +590,99 @@ def admin_production_delete(request, ticker, period):
 # ADMIN — INVESTOR MANAGEMENT
 # ══════════════════════════════════════════════════════════════════════════════
 
-# TODO: admin_investors
+@admin_required
+@require_http_methods(["GET"])
+# GET 200 { investors: [ { user_id, first_name, last_name, email, permission_level, is_active } ] }
+def admin_investors(request):
+    investors = (
+        Usertab.objects.filter(permission_level=Usertab.PermissionLevel.INVESTOR)
+        .order_by('user_id')
+    )
+    return JsonResponse({
+        'investors': [
+            {
+                'user_id': u.user_id,
+                'first_name': u.user_fname,
+                'last_name': u.user_lname,
+                'email': u.user_email,
+                'permission_level': u.permission_level,
+                'is_active': u.is_active,
+            }
+            for u in investors
+        ]
+    })
 
 
-# TODO: admin_investor_approve
+@csrf_exempt
+@admin_required
+@require_http_methods(["POST"])
+# POST — approve pending investor (sets is_active True)
+# 200 { message, user_id }
+# 404 user not found
+# 400 if target is not an investor
+def admin_investor_approve(request, user_id):
+    try:
+        user = Usertab.objects.get(pk=user_id)
+    except Usertab.DoesNotExist:
+        return JsonResponse({'error': f"User with id {user_id} not found."}, status=404)
+
+    if not user.is_investor:
+        return JsonResponse({'error': 'Target user is not an investor.'}, status=400)
+
+    user.is_active = True
+    user.save(update_fields=['is_active'])
+
+    return JsonResponse({
+        'message': 'Investor approved successfully.',
+        'user_id': user.user_id,
+    })
 
 
-# TODO: admin_investor_deactivate
+@csrf_exempt
+@admin_required
+@require_http_methods(["POST"])
+# POST — deactivate investor account
+# 200 { message, user_id }
+# 404 user not found
+# 400 if target is not an investor
+def admin_investor_deactivate(request, user_id):
+    try:
+        user = Usertab.objects.get(pk=user_id)
+    except Usertab.DoesNotExist:
+        return JsonResponse({'error': f"User with id {user_id} not found."}, status=404)
+
+    if not user.is_investor:
+        return JsonResponse({'error': 'Target user is not an investor.'}, status=400)
+
+    user.is_active = False
+    user.save(update_fields=['is_active'])
+
+    return JsonResponse({
+        'message': 'Investor deactivated successfully.',
+        'user_id': user.user_id,
+    })
 
 
-# TODO: admin_investor_delete
+@csrf_exempt
+@admin_required
+@require_http_methods(["POST"])
+# POST — delete investor user record
+# 200 { message, user_id }
+# 404 user not found
+# 400 if target is not an investor
+def admin_investor_delete(request, user_id):
+    try:
+        user = Usertab.objects.get(pk=user_id)
+    except Usertab.DoesNotExist:
+        return JsonResponse({'error': f"User with id {user_id} not found."}, status=404)
+
+    if not user.is_investor:
+        return JsonResponse({'error': 'Target user is not an investor.'}, status=400)
+
+    uid = user.user_id
+    user.delete()
+
+    return JsonResponse({
+        'message': 'Investor deleted successfully.',
+        'user_id': uid,
+    })
