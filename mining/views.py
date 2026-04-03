@@ -5,7 +5,8 @@ Session based auth stores user_id and permission_level after login.
 """
 
 import json
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
+from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from django.utils import timezone
@@ -28,6 +29,10 @@ from .utils import (
     get_current_user, login_user, logout_user, rebuild_rankings,
     login_required, admin_required, investor_required,
 )
+
+
+def home_view(request):
+    return render(request, 'home.html')
 
 
 # ─────────────────────────────────────────────────────────────────────────────
