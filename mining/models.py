@@ -137,7 +137,7 @@ class Finmetrics(models.Model):
 
 class Stockprice(models.Model):
     ticker              = models.ForeignKey(Company, on_delete=models.CASCADE, primary_key=True, db_column = 'Ticker', related_name = 'stock_prices')
-    date_updated = models.DateField(primary_key=True, db_column='Date_Updated')
+    date_updated = models.DateField(db_column='Date_Updated')
     previous_open = models.DecimalField(max_digits = 10, decimal_places = 2, null=True, blank=True, db_column = 'PreviousOpen')
     previous_close = models.DecimalField(max_digits = 10, decimal_places = 2, null=True, blank=True, db_column = 'PreviousClose')
     fifty_two_week_high = models.DecimalField(max_digits = 10, decimal_places = 2, null=True, blank=True, db_column = 'FiftyTwoWeekHigh')
@@ -158,7 +158,7 @@ class Stockprice(models.Model):
 
 class Productiondata(models.Model):
     ticker = models.ForeignKey(Company, on_delete = models.CASCADE, primary_key=True, db_column = 'Ticker', related_name = 'production_records')
-    period = models.CharField(max_length = 20, primary_key=True, db_column = 'Period')
+    period = models.CharField(max_length = 20, db_column = 'Period')
     silver_ounces_produced = models.DecimalField(max_digits = 15, decimal_places = 2, null=True, blank=True, db_column = 'SilverOuncesProduced')
     notes = models.TextField(null=True, blank=True, db_column = 'Notes')
     last_updated_by = models.ForeignKey(Usertab, on_delete = models.SET_NULL, null=True, blank=True, db_column = 'LastUpdatedBy', related_name = 'production_updated')

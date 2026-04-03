@@ -476,7 +476,7 @@ def admin_stockprice_add(request):
 
     admin   = get_current_user(request)
     stockprice = form.save()
-    Updatesstockprice.objects.get_or_create(admin=admin, ticker=stockprice, date_updated=stockprice)
+    Updatesstockprice.objects.get_or_create(admin=admin, ticker=stockprice)
 
     return JsonResponse({'ticker': stockprice.ticker, 'date_updated': stockprice.date_updated, 
                          'previous_open': stockprice.previous_open, 'previous_close': stockprice.previous_close, 
@@ -487,11 +487,11 @@ def admin_stockprice_add(request):
 @csrf_exempt
 @admin_required
 @require_http_methods(["POST"])
-def admin_stockprice_edit(request, ticker, date_updated):
+def admin_stockprice_edit(request, ticker):
     try:
-        stockprice = Stockprice.objects.get(pk = (ticker, date_updated))
+        stockprice = Stockprice.objects.get(pk = ticker)
     except Stockprice.DoesNotExist:
-        return JsonResponse({'error': f"Company '{ticker}' updated at '{date_updated}' not found."}, status = 404)
+        return JsonResponse({'error': f"Company '{ticker}' not found."}, status = 404)
 
     form = StockpriceUpdateForm(_body(request), instance=stockprice)
     if not form.is_valid():
@@ -499,7 +499,7 @@ def admin_stockprice_edit(request, ticker, date_updated):
 
     admin = get_current_user(request)
     stockprice = form.save()
-    Updatesstockprice.objects.get_or_create(admin=admin, ticker=stockprice, date_updated=stockprice)
+    Updatesstockprice.objects.get_or_create(admin=admin, ticker=stockprice)
 
     return JsonResponse({'ticker': stockprice.ticker, 'date_updated': stockprice.date_updated, 
                          'previous_open': stockprice.previous_open, 'previous_close': stockprice.previous_close, 
@@ -510,11 +510,11 @@ def admin_stockprice_edit(request, ticker, date_updated):
 @csrf_exempt
 @admin_required
 @require_http_methods(["POST"])
-def admin_stockprice_delete(request, ticker, date_updated):
+def admin_stockprice_delete(request, ticker):
     try:
-        stockprice = Stockprice.objects.get(pk = (ticker, date_updated))
+        stockprice = Stockprice.objects.get(pk = ticker)
     except Stockprice.DoesNotExist:
-        return JsonResponse({'error': f"Company '{ticker}' updated at '{date_updated}' not found."}, status = 404)
+        return JsonResponse({'error': f"Company '{ticker}' not found."}, status = 404)
 
     stockprice.delete()
     return JsonResponse({'message': f"Company '{ticker}' stock price deleted."})
@@ -544,7 +544,7 @@ def admin_production_add(request):
 
     admin   = get_current_user(request)
     productiondata = form.save()
-    Updatesproductiondata.objects.get_or_create(admin=admin, ticker=productiondata, period=productiondata)
+    Updatesproductiondata.objects.get_or_create(admin=admin, ticker=productiondata)
 
     return JsonResponse({'ticker': productiondata.ticker, 'period': productiondata.period, 
                          'silver_ounces_produced': productiondata.silver_ounces_produced, 
@@ -554,11 +554,11 @@ def admin_production_add(request):
 @csrf_exempt
 @admin_required
 @require_http_methods(["POST"])
-def admin_production_edit(request, ticker, period):
+def admin_production_edit(request, ticker):
     try:
-        productiondata = Productiondata.objects.get(pk = (ticker, period))
+        productiondata = Productiondata.objects.get(pk = ticker)
     except Productiondata.DoesNotExist:
-        return JsonResponse({'error': f"Company '{ticker}' with period '{period}' not found."}, status = 404)
+        return JsonResponse({'error': f"Company '{ticker}' not found."}, status = 404)
 
     form = ProductiondataUpdateForm(_body(request), instance=productiondata)
     if not form.is_valid():
@@ -566,7 +566,7 @@ def admin_production_edit(request, ticker, period):
 
     admin = get_current_user(request)
     productiondata = form.save()
-    Updatesproductiondata.objects.get_or_create(admin=admin, ticker=productiondata, period=productiondata)
+    Updatesproductiondata.objects.get_or_create(admin=admin, ticker=productiondata)
 
     return JsonResponse({'ticker': productiondata.ticker, 'period': productiondata.period, 
                          'silver_ounces_produced': productiondata.silver_ounces_produced, 
@@ -576,11 +576,11 @@ def admin_production_edit(request, ticker, period):
 @csrf_exempt
 @admin_required
 @require_http_methods(["POST"])
-def admin_production_delete(request, ticker, period):
+def admin_production_delete(request, ticker):
     try:
-        productiondata = Productiondata.objects.get(pk = (ticker, period))
+        productiondata = Productiondata.objects.get(pk = ticker)
     except Productiondata.DoesNotExist:
-        return JsonResponse({'error': f"Company '{ticker}' with period '{period}' not found."}, status = 404)
+        return JsonResponse({'error': f"Company '{ticker}' not found."}, status = 404)
 
     productiondata.delete()
     return JsonResponse({'message': f"Company '{ticker}' production data deleted."})
