@@ -32,7 +32,13 @@ from .utils import (
 
 
 def home_view(request):
-    return render(request, 'home.html')
+    return render(request, 'base.html')
+
+def login(request):
+    return render(request, 'login.html')
+
+def register(request):
+    return render(request, 'register.html')
 
 
 # ─────────────────────────────────────────────────────────────────────────────
