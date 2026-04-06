@@ -13,6 +13,8 @@ urlpatterns = [
     path('login/', views.login, name = 'login'),
     path('logout/', views.logout_view, name = 'logout'),
     path('register/', views.register, name = 'register'),
+    path('register/message/', views.register_view, name = 'register_message'),
+
 
     # ── Shared ────────────────────────────────────────────────────────────────
     path('dashboard/', views.dashboard, name = 'dashboard'),
@@ -21,7 +23,7 @@ urlpatterns = [
     path('companies/', views.company_list, name = 'company_list'),
     path('companies/<str:ticker>/', views.company_detail, name = 'company_detail'),
     path('companies/<str:ticker>/favourite/', views.toggle_favourite, name = 'toggle_favourite'),
-    path('favourites/', views.favourites_list, name = 'favourites'),
+    path('favourites/', views.favourites, name = 'favourites'),
 
     # ── Admin — dashboard ─────────────────────────────────────────────────────
     path('admin/', views.admin_dashboard, name = 'admin_dashboard'),
