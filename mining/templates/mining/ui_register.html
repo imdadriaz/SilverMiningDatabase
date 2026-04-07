@@ -5,7 +5,31 @@
 <div class="row justify-content-center">
   <div class="col-md-8 col-lg-6">
     <h1 class="h3 mb-3">Register</h1>
-    <p class="text-body-secondary">I haven't built the register form yet, my teammates are handling auth. Check back later.</p>
+    <form id="formRegister" class="card sm-card" style="max-width: 32rem;">
+      <div class="card-body">
+        <div class="mb-3">
+          <label class="form-label" for="fname">First name</label>
+          <input type="text" class="form-control" id="fname" name="fname">
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="lname">Last name</label>
+          <input type="text" class="form-control" id="lname" name="lname">
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="rEmail">Email</label>
+          <input type="text" class="form-control" id="rEmail" name="email">
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="rPassword">Password</label>
+          <input type="password" class="form-control" id="rPassword" name="password">
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="rcPassword">Confirm password</label>
+          <input type="password" class="form-control" id="rcPassword" name="password">
+        </div>
+        <button type="submit" class="btn btn-primary">Save</button>
+      </div>
+    </form>
     <p class="mb-0"><a href="{% url 'ui_login' %}">Back to log in</a></p>
   </div>
 </div>

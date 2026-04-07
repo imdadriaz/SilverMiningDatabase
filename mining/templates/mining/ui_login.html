@@ -5,7 +5,19 @@
 <div class="row justify-content-center">
   <div class="col-md-8 col-lg-6">
     <h1 class="h3 mb-3">Log in</h1>
-    <p class="text-body-secondary">I haven't implemented the login UI yet, my teammates are handling that part. For now I'm testing my pages directly.</p>
+    <form id="formLogIn" class="card sm-card" style="max-width: 32rem;">
+      <div class="card-body">
+        <div class="mb-3">
+          <label class="form-label" for="liEmail">Email</label>
+          <input type="text" class="form-control" id="liEmail" name="email">
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="liPassword">Password</label>
+          <input type="password" class="form-control" id="liPassword" name="password">
+        </div>
+        <button type="submit" class="btn btn-primary">Save</button>
+      </div>
+    </form>
     <p class="mb-0"><a href="{% url 'ui_register' %}">Register</a></p>
   </div>
 </div>

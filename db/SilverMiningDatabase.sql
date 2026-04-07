@@ -17,6 +17,7 @@ CREATE TABLE USERTAB(
     User_Email VARCHAR(100) NOT NULL,
     User_Password VARCHAR(200) NOT NULL,
     Permission_Level ENUM('Investor', 'Admin') NOT NULL,
+    Is_Active TINYINT(1) NOT NULL,
     CONSTRAINT USERTAB_PK PRIMARY KEY (User_ID)
 );
 
@@ -164,9 +165,9 @@ CREATE TABLE UPDATESPRODUCTIONDATA (
 
 INSERT INTO USERTAB (User_FName, User_LName, User_Email, User_Password, Permission_Level)
 VALUES
-('Maad', 'Abbasi', 'maad@email.com', 'pw1', 'Investor'),
-('Imdad', 'Goraho', 'slee@email.com', 'pw2', 'Admin'),
-('Jade', 'Torres', 'jsmith@emaul.com', 'pw3', 'Investor');
+('Maad', 'Abbasi', 'maad@email.com', 'pw1', 'Investor', 1),
+('Imdad', 'Goraho', 'slee@email.com', 'pw2', 'Admin', 1),
+('Jade', 'Torres', 'jsmith@emaul.com', 'pw3', 'Investor', 1);
 
 -- User_IDs will be:
 -- 1 = Maad (Investor)
