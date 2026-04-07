@@ -1,0 +1,44 @@
+{% extends "mining/base.html" %}
+{% load static %}
+{% block title %}Edit metrics {{ ticker }}{% endblock %}
+{% block body_attrs %}data-page="edit_finmetrics" data-ticker="{{ ticker|escape }}"{% endblock %}
+{% block content %}
+<div id="adminAccessDenied" class="alert alert-warning d-none" role="alert">Admin access required.</div>
+<div class="mb-4">
+  <h1 class="sm-page-title h2">Edit financial metrics</h1>
+  <p class="sm-muted mb-0">Ticker: <strong>{{ ticker }}</strong></p>
+</div>
+<form id="formEditFinmetrics" class="card sm-card" style="max-width: 36rem;">
+  <div class="card-body row g-3">
+    <div class="col-md-6">
+      <label class="form-label" for="feAisc">AISC</label>
+      <input type="number" step="any" class="form-control" id="feAisc" required>
+    </div>
+    <div class="col-md-6">
+      <label class="form-label" for="fePeg">PEG</label>
+      <input type="number" step="any" class="form-control" id="fePeg" required>
+    </div>
+    <div class="col-md-6">
+      <label class="form-label" for="feDebt">Total debt</label>
+      <input type="number" step="any" class="form-control" id="feDebt" required>
+    </div>
+    <div class="col-md-6">
+      <label class="form-label" for="feDe">Debt to equity</label>
+      <input type="number" step="any" class="form-control" id="feDe" required>
+    </div>
+    <div class="col-md-6">
+      <label class="form-label" for="feRev">Revenue</label>
+      <input type="number" step="any" class="form-control" id="feRev" required>
+    </div>
+    <div class="col-md-6">
+      <label class="form-label" for="feEbitda">EBITDA</label>
+      <input type="number" step="any" class="form-control" id="feEbitda" required>
+    </div>
+    <div class="col-12">
+      <button type="submit" class="btn btn-primary">Save</button>
+      <a class="btn btn-link" href="{% url 'ui_admin_finmetrics' %}">Cancel</a>
+    </div>
+  </div>
+</form>
+{% endblock %}
+{% block extra_js %}<script src="{% static 'mining/js/admin.js' %}"></script>{% endblock %}

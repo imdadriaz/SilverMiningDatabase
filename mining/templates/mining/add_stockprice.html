@@ -1,0 +1,44 @@
+{% extends "mining/base.html" %}
+{% load static %}
+{% block title %}Add stock price{% endblock %}
+{% block body_attrs %}data-page="add_stockprice"{% endblock %}
+{% block content %}
+<div id="adminAccessDenied" class="alert alert-warning d-none" role="alert">Admin access required.</div>
+<div class="mb-4">
+  <h1 class="sm-page-title h2">Add stock price</h1>
+  <p class="sm-muted mb-0">Record a stock price snapshot for a given ticker and date.</p>
+</div>
+<form id="formAddStockprice" class="card sm-card" style="max-width: 36rem;">
+  <div class="card-body row g-3">
+    <div class="col-md-6">
+      <label class="form-label" for="spTicker">Ticker</label>
+      <input type="text" class="form-control text-uppercase" id="spTicker" required maxlength="10">
+    </div>
+    <div class="col-md-6">
+      <label class="form-label" for="spDate">Date</label>
+      <input type="date" class="form-control" id="spDate" required>
+    </div>
+    <div class="col-md-6">
+      <label class="form-label" for="spOpen">Previous open</label>
+      <input type="number" step="any" class="form-control" id="spOpen" required>
+    </div>
+    <div class="col-md-6">
+      <label class="form-label" for="spClose">Previous close</label>
+      <input type="number" step="any" class="form-control" id="spClose" required>
+    </div>
+    <div class="col-md-6">
+      <label class="form-label" for="spHigh">52-week high</label>
+      <input type="number" step="any" class="form-control" id="spHigh" required>
+    </div>
+    <div class="col-md-6">
+      <label class="form-label" for="spLow">52-week low</label>
+      <input type="number" step="any" class="form-control" id="spLow" required>
+    </div>
+    <div class="col-12">
+      <button type="submit" class="btn btn-primary">Save</button>
+      <a class="btn btn-link" href="{% url 'ui_admin_stockprices' %}">Cancel</a>
+    </div>
+  </div>
+</form>
+{% endblock %}
+{% block extra_js %}<script src="{% static 'mining/js/admin.js' %}"></script>{% endblock %}

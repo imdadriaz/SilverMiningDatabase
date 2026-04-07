@@ -1,0 +1,12 @@
+{% extends "mining/base.html" %}
+{% block title %}Log in{% endblock %}
+{% block body_attrs %}data-page="auth_login"{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-8 col-lg-6">
+    <h1 class="h3 mb-3">Log in</h1>
+    <p class="text-body-secondary">I haven't implemented the login UI yet, my teammates are handling that part. For now I'm testing my pages directly.</p>
+    <p class="mb-0"><a href="{% url 'ui_register' %}">Register</a></p>
+  </div>
+</div>
+{% endblock %}

@@ -110,6 +110,10 @@ class StockpriceForm(forms.ModelForm):
         model = Stockprice
         fields = ['ticker', 'date_updated','previous_open', 'previous_close','fifty_two_week_high', 'fifty_two_week_low',]
 
+    def validate_unique(self):
+        # Real PK is composite (Ticker, Date_Updated); our clean() handles dupe check
+        pass
+
     def clean(self):
         cleaned = super().clean()
         ticker = cleaned.get('ticker')
@@ -165,6 +169,10 @@ class ProductiondataForm(forms.ModelForm):
     class Meta:
         model = Productiondata
         fields = ['ticker', 'period', 'silver_ounces_produced', 'notes']
+
+    def validate_unique(self):
+        # Real PK is composite (Ticker, Period); our clean() handles dupe check
+        pass
 
     def clean(self):
         cleaned = super().clean()

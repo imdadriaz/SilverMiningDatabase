@@ -5,7 +5,12 @@ Session based auth stores user_id and permission_level after login.
 """
 
 import json
+from urllib.parse import unquote
+
+from django.db import connection
 from django.http import JsonResponse
+from django.shortcuts import render
+from django.utils.dateparse import parse_date
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from django.utils import timezone
@@ -28,6 +33,7 @@ from .utils import (
     get_current_user, login_user, logout_user, rebuild_rankings,
     login_required, admin_required, investor_required,
 )
+
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -188,8 +194,15 @@ def company_detail(request, ticker):
 
     user = get_current_user(request)
 
-    # Record the view
-    Viewsdetails.objects.get_or_create(investor=user, ticker=company)
+    # Record the view — raw SQL because VIEWSDETAILS has no auto-id column
+    try:
+        with connection.cursor() as cur:
+            cur.execute(
+                "INSERT IGNORE INTO VIEWSDETAILS (InvestorID, Ticker) VALUES (%s, %s)",
+                [user.user_id, company.ticker]
+            )
+    except Exception:
+        pass
 
     # Ranking
     try:
@@ -286,20 +299,25 @@ def toggle_favourite(request, ticker):
 #200 { favourites: [ { ticker, company_name, date_favourited } ] }
 def favourites_list(request):
     user = get_current_user(request)
-    favs = (
-        Favourite.objects
-        .filter(investor=user)
-        .select_related('ticker')
-        .order_by('-date_favourited')
-    )
+    # Raw SQL — FAVOURITE has no auto-id; queryset would SELECT FAVOURITE.id → error
+    with connection.cursor() as cur:
+        cur.execute(
+            """SELECT f.Ticker, c.Company_Name, f.DateFavourited
+               FROM FAVOURITE f
+               JOIN COMPANY c ON c.Ticker = f.Ticker
+               WHERE f.Investor_ID = %s
+               ORDER BY f.DateFavourited DESC""",
+            [user.user_id]
+        )
+        rows = cur.fetchall()
     return JsonResponse({
         'favourites': [
             {
-                'ticker': f.ticker.ticker,
-                'company_name': f.ticker.company_name,
-                'date_favourited': str(f.date_favourited),
+                'ticker': row[0],
+                'company_name': row[1],
+                'date_favourited': str(row[2]),
             }
-            for f in favs
+            for row in rows
         ]
     })
 
@@ -341,7 +359,8 @@ def admin_company_add(request):
 
     admin   = get_current_user(request)
     company = form.save()
-    Updatescompany.objects.get_or_create(admin=admin, ticker=company)
+    with connection.cursor() as cur:
+        cur.execute("INSERT IGNORE INTO UPDATESCOMPANY (AdminID, Ticker) VALUES (%s, %s)", [admin.user_id, company.ticker])
 
     return JsonResponse({'ticker': company.ticker, 'company_name': company.company_name}, status = 201,)
 
@@ -366,7 +385,8 @@ def admin_company_edit(request, ticker):
 
     admin = get_current_user(request)
     company = form.save()
-    Updatescompany.objects.get_or_create(admin=admin, ticker=company)
+    with connection.cursor() as cur:
+        cur.execute("INSERT IGNORE INTO UPDATESCOMPANY (AdminID, Ticker) VALUES (%s, %s)", [admin.user_id, company.ticker])
 
     return JsonResponse({'ticker': company.ticker, 'company_name': company.company_name})
 
@@ -408,12 +428,13 @@ def admin_finmetrics_add(request):
 
     admin   = get_current_user(request)
     finmetrics = form.save()
-    Updatesfinmetrics.objects.get_or_create(admin=admin, ticker=finmetrics)
+    with connection.cursor() as cur:
+        cur.execute("INSERT IGNORE INTO UPDATESFINMETRICS (AdminID, Ticker) VALUES (%s, %s)", [admin.user_id, finmetrics.ticker_id])
 
-    return JsonResponse({'ticker': finmetrics.ticker, 'aisc': finmetrics.aisc, 
-                         'peg': finmetrics.peg, 'total_debt': finmetrics.total_debt,
-                         'debt_to_equity': finmetrics.debt_to_equity, 
-                         'revenue': finmetrics.revenue, 'ebitda': finmetrics.ebitda}, status = 201,)
+    return JsonResponse({'ticker': finmetrics.ticker_id, 'aisc': float(finmetrics.aisc), 
+                         'peg': float(finmetrics.peg), 'total_debt': float(finmetrics.total_debt),
+                         'debt_to_equity': float(finmetrics.debt_to_equity), 
+                         'revenue': float(finmetrics.revenue), 'ebitda': float(finmetrics.ebitda)}, status = 201,)
 
 
 @csrf_exempt
@@ -431,12 +452,13 @@ def admin_finmetrics_edit(request, ticker):
 
     admin = get_current_user(request)
     finmetrics = form.save()
-    Updatesfinmetrics.objects.get_or_create(admin=admin, ticker=finmetrics)
+    with connection.cursor() as cur:
+        cur.execute("INSERT IGNORE INTO UPDATESFINMETRICS (AdminID, Ticker) VALUES (%s, %s)", [admin.user_id, finmetrics.ticker_id])
 
-    return JsonResponse({'ticker': finmetrics.ticker, 'aisc': finmetrics.aisc, 
-                         'peg': finmetrics.peg, 'total_debt': finmetrics.total_debt,
-                         'debt_to_equity': finmetrics.debt_to_equity, 
-                         'revenue': finmetrics.revenue, 'ebitda': finmetrics.ebitda})
+    return JsonResponse({'ticker': finmetrics.ticker_id, 'aisc': float(finmetrics.aisc), 
+                         'peg': float(finmetrics.peg), 'total_debt': float(finmetrics.total_debt),
+                         'debt_to_equity': float(finmetrics.debt_to_equity), 
+                         'revenue': float(finmetrics.revenue), 'ebitda': float(finmetrics.ebitda)})
 
 
 @csrf_exempt
@@ -475,49 +497,70 @@ def admin_stockprice_add(request):
         return JsonResponse({'errors': _form_errors(form)}, status = 400)
 
     admin   = get_current_user(request)
-    stockprice = form.save()
-    Updatesstockprice.objects.get_or_create(admin=admin, ticker=stockprice)
+    stockprice = form.save(commit=False)
+    stockprice.save(force_insert=True)   # composite PK — always INSERT
+    with connection.cursor() as cur:
+        cur.execute("INSERT IGNORE INTO UPDATESSTOCKPRICE (AdminID, Ticker, Date_Updated) VALUES (%s, %s, %s)",
+                    [admin.user_id, stockprice.ticker_id, stockprice.date_updated])
 
-    return JsonResponse({'ticker': stockprice.ticker, 'date_updated': stockprice.date_updated, 
-                         'previous_open': stockprice.previous_open, 'previous_close': stockprice.previous_close, 
-                         'fifty_two_week_high': stockprice.fifty_two_week_high, 
-                         'fifty_two_week_low': stockprice.fifty_two_week_low}, status = 201,)
+    return JsonResponse({'ticker': stockprice.ticker_id, 'date_updated': str(stockprice.date_updated), 
+                         'previous_open': str(stockprice.previous_open or ''),
+                         'previous_close': str(stockprice.previous_close or ''),
+                         'fifty_two_week_high': str(stockprice.fifty_two_week_high or ''),
+                         'fifty_two_week_low': str(stockprice.fifty_two_week_low or '')}, status = 201,)
 
 
 @csrf_exempt
 @admin_required
 @require_http_methods(["POST"])
-def admin_stockprice_edit(request, ticker):
+def admin_stockprice_edit(request, ticker, date):
+    d = parse_date(date)
+    if d is None:
+        return JsonResponse({'error': 'Invalid date.'}, status=400)
     try:
-        stockprice = Stockprice.objects.get(pk = ticker)
+        stockprice = Stockprice.objects.get(ticker_id=ticker, date_updated=d)
     except Stockprice.DoesNotExist:
-        return JsonResponse({'error': f"Company '{ticker}' not found."}, status = 404)
+        return JsonResponse({'error': f"No stock price for '{ticker}' on {date}."}, status=404)
 
     form = StockpriceUpdateForm(_body(request), instance=stockprice)
     if not form.is_valid():
         return JsonResponse({'errors': _form_errors(form)}, status = 400)
 
     admin = get_current_user(request)
-    stockprice = form.save()
-    Updatesstockprice.objects.get_or_create(admin=admin, ticker=stockprice)
+    cd = form.cleaned_data
+    # Raw SQL UPDATE — Django ORM cannot reliably UPDATE composite-PK tables
+    with connection.cursor() as cur:
+        cur.execute(
+            """UPDATE STOCKPRICE
+               SET PreviousOpen=%s, PreviousClose=%s, FiftyTwoWeekHigh=%s, FiftyTwoWeekLow=%s
+               WHERE Ticker=%s AND Date_Updated=%s""",
+            [cd['previous_open'], cd['previous_close'], cd['fifty_two_week_high'], cd['fifty_two_week_low'],
+             ticker, d]
+        )
+        cur.execute("INSERT IGNORE INTO UPDATESSTOCKPRICE (AdminID, Ticker, Date_Updated) VALUES (%s, %s, %s)",
+                    [admin.user_id, ticker, d])
 
-    return JsonResponse({'ticker': stockprice.ticker, 'date_updated': stockprice.date_updated, 
-                         'previous_open': stockprice.previous_open, 'previous_close': stockprice.previous_close, 
-                         'fifty_two_week_high': stockprice.fifty_two_week_high, 
-                         'fifty_two_week_low': stockprice.fifty_two_week_low})
+    return JsonResponse({'ticker': ticker, 'date_updated': str(d),
+                         'previous_open': str(cd['previous_open'] or ''),
+                         'previous_close': str(cd['previous_close'] or ''),
+                         'fifty_two_week_high': str(cd['fifty_two_week_high'] or ''),
+                         'fifty_two_week_low': str(cd['fifty_two_week_low'] or '')})
 
 
 @csrf_exempt
 @admin_required
 @require_http_methods(["POST"])
-def admin_stockprice_delete(request, ticker):
+def admin_stockprice_delete(request, ticker, date):
+    d = parse_date(date)
+    if d is None:
+        return JsonResponse({'error': 'Invalid date.'}, status=400)
     try:
-        stockprice = Stockprice.objects.get(pk = ticker)
+        stockprice = Stockprice.objects.get(ticker_id=ticker, date_updated=d)
     except Stockprice.DoesNotExist:
-        return JsonResponse({'error': f"Company '{ticker}' not found."}, status = 404)
+        return JsonResponse({'error': f"No stock price for '{ticker}' on {date}."}, status=404)
 
     stockprice.delete()
-    return JsonResponse({'message': f"Company '{ticker}' stock price deleted."})
+    return JsonResponse({'message': f"Stock price for '{ticker}' on {date} deleted."})
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -543,47 +586,59 @@ def admin_production_add(request):
         return JsonResponse({'errors': _form_errors(form)}, status = 400)
 
     admin   = get_current_user(request)
-    productiondata = form.save()
-    Updatesproductiondata.objects.get_or_create(admin=admin, ticker=productiondata)
+    productiondata = form.save(commit=False)
+    productiondata.save(force_insert=True)   # composite PK — always INSERT
+    with connection.cursor() as cur:
+        cur.execute("INSERT IGNORE INTO UPDATESPRODUCTIONDATA (AdminID, Ticker, Period) VALUES (%s, %s, %s)",
+                    [admin.user_id, productiondata.ticker_id, productiondata.period])
 
-    return JsonResponse({'ticker': productiondata.ticker, 'period': productiondata.period, 
-                         'silver_ounces_produced': productiondata.silver_ounces_produced, 
-                         'notes': productiondata.notes}, status = 201,)
+    return JsonResponse({'ticker': productiondata.ticker_id, 'period': productiondata.period, 
+                         'silver_ounces_produced': str(productiondata.silver_ounces_produced or ''), 
+                         'notes': productiondata.notes or ''}, status = 201,)
 
 
 @csrf_exempt
 @admin_required
 @require_http_methods(["POST"])
-def admin_production_edit(request, ticker):
+def admin_production_edit(request, ticker, period):
+    period = unquote(period)
     try:
-        productiondata = Productiondata.objects.get(pk = ticker)
+        productiondata = Productiondata.objects.get(ticker_id=ticker, period=period)
     except Productiondata.DoesNotExist:
-        return JsonResponse({'error': f"Company '{ticker}' not found."}, status = 404)
+        return JsonResponse({'error': f"No production row for '{ticker}' / '{period}'."}, status = 404)
 
     form = ProductiondataUpdateForm(_body(request), instance=productiondata)
     if not form.is_valid():
         return JsonResponse({'errors': _form_errors(form)}, status = 400)
 
     admin = get_current_user(request)
-    productiondata = form.save()
-    Updatesproductiondata.objects.get_or_create(admin=admin, ticker=productiondata)
+    cd = form.cleaned_data
+    # Raw SQL UPDATE — Django ORM cannot reliably UPDATE composite-PK tables
+    with connection.cursor() as cur:
+        cur.execute(
+            "UPDATE PRODUCTIONDATA SET SilverOuncesProduced=%s, Notes=%s WHERE Ticker=%s AND Period=%s",
+            [cd.get('silver_ounces_produced'), cd.get('notes', ''), ticker, period]
+        )
+        cur.execute("INSERT IGNORE INTO UPDATESPRODUCTIONDATA (AdminID, Ticker, Period) VALUES (%s, %s, %s)",
+                    [admin.user_id, ticker, period])
 
-    return JsonResponse({'ticker': productiondata.ticker, 'period': productiondata.period, 
-                         'silver_ounces_produced': productiondata.silver_ounces_produced, 
-                         'notes': productiondata.notes})
+    return JsonResponse({'ticker': ticker, 'period': period, 
+                         'silver_ounces_produced': str(cd.get('silver_ounces_produced') or ''), 
+                         'notes': cd.get('notes', '') or ''})
 
 
 @csrf_exempt
 @admin_required
 @require_http_methods(["POST"])
-def admin_production_delete(request, ticker):
+def admin_production_delete(request, ticker, period):
+    period = unquote(period)
     try:
-        productiondata = Productiondata.objects.get(pk = ticker)
+        productiondata = Productiondata.objects.get(ticker_id=ticker, period=period)
     except Productiondata.DoesNotExist:
-        return JsonResponse({'error': f"Company '{ticker}' not found."}, status = 404)
+        return JsonResponse({'error': f"No production row for '{ticker}' / '{period}'."}, status = 404)
 
     productiondata.delete()
-    return JsonResponse({'message': f"Company '{ticker}' production data deleted."})
+    return JsonResponse({'message': f"Production row for '{ticker}' / '{period}' deleted."})
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -686,3 +741,149 @@ def admin_investor_delete(request, user_id):
         'message': 'Investor deleted successfully.',
         'user_id': uid,
     })
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# HTML UI — thin template shells; data loaded via fetch to JSON routes above.
+# ══════════════════════════════════════════════════════════════════════════════
+
+def _render_ui(request, template, page_title, nav_mode, nav_active='', extra=None):
+    ctx = {
+        'page_title': page_title,
+        'nav_mode': nav_mode,
+        'nav_active': nav_active,
+    }
+    if extra:
+        ctx.update(extra)
+    return render(request, template, ctx)
+
+
+def ui_login(request):
+    return _render_ui(request, 'mining/ui_login.html', 'Log in', 'auth')
+
+
+def ui_register(request):
+    return _render_ui(request, 'mining/ui_register.html', 'Register', 'auth')
+
+
+def ui_investor_dashboard(request):
+    return _render_ui(request, 'mining/investor_dashboard.html', 'Investor dashboard', 'investor', 'dashboard')
+
+
+def ui_ranked_companies(request):
+    return _render_ui(request, 'mining/ranked_companies.html', 'Ranked companies', 'investor', 'companies')
+
+
+def ui_company_details(request, ticker):
+    return _render_ui(
+        request,
+        'mining/company_details.html',
+        'Company details',
+        'investor',
+        'companies',
+        {'ticker': ticker},
+    )
+
+
+def ui_favourites(request):
+    return _render_ui(request, 'mining/favourites.html', 'Favourites', 'investor', 'favourites')
+
+
+def ui_admin_dashboard(request):
+    return _render_ui(request, 'mining/admin_dashboard.html', 'Admin dashboard', 'admin', 'dashboard')
+
+
+def ui_admin_companies(request):
+    return _render_ui(request, 'mining/admin_companies.html', 'Companies', 'admin', 'companies')
+
+
+def ui_admin_company_add(request):
+    return _render_ui(request, 'mining/add_company.html', 'Add company', 'admin', 'companies')
+
+
+def ui_admin_company_edit(request, ticker):
+    return _render_ui(
+        request,
+        'mining/edit_company.html',
+        'Edit company',
+        'admin',
+        'companies',
+        {'ticker': ticker},
+    )
+
+
+def ui_admin_investors(request):
+    return _render_ui(request, 'mining/manage_investors.html', 'Manage investors', 'admin', 'investors')
+
+
+def ui_admin_finmetrics(request):
+    return _render_ui(request, 'mining/financial_metrics.html', 'Financial metrics', 'admin', 'finmetrics')
+
+
+def ui_admin_finmetrics_add(request):
+    return _render_ui(request, 'mining/add_finmetrics.html', 'Add financial metrics', 'admin', 'finmetrics')
+
+
+def ui_admin_finmetrics_edit(request, ticker):
+    return _render_ui(
+        request,
+        'mining/edit_finmetrics.html',
+        'Edit financial metrics',
+        'admin',
+        'finmetrics',
+        {'ticker': ticker},
+    )
+
+
+def ui_admin_stockprices(request):
+    return _render_ui(request, 'mining/stock_prices.html', 'Stock prices', 'admin', 'stockprices')
+
+
+def ui_admin_stockprice_add(request):
+    return _render_ui(request, 'mining/add_stockprice.html', 'Add stock price', 'admin', 'stockprices')
+
+
+def ui_admin_stockprice_edit(request, ticker, date):
+    return _render_ui(
+        request,
+        'mining/edit_stockprice.html',
+        'Edit stock price',
+        'admin',
+        'stockprices',
+        {'ticker': ticker, 'quote_date': date},
+    )
+
+
+def ui_admin_production(request):
+    return _render_ui(request, 'mining/production_data.html', 'Production data', 'admin', 'production')
+
+
+def ui_admin_production_add(request):
+    return _render_ui(request, 'mining/add_production.html', 'Add production record', 'admin', 'production')
+
+
+def ui_admin_production_edit(request, ticker, period):
+    return _render_ui(
+        request,
+        'mining/edit_production.html',
+        'Edit production record',
+        'admin',
+        'production',
+        {'ticker': ticker, 'period': unquote(period)},
+    )
+
+
+# ── DEV-ONLY: bypass auth for local testing — remove before submission ────────
+from django.http import HttpResponseRedirect
+
+def dev_login(request, role):
+    """Sets session directly so the UI can be tested without the auth flow."""
+    if role == 'admin':
+        request.session['user_id'] = 2          # Imdad Goraho — Admin
+        request.session['permission_level'] = 'Admin'
+        return HttpResponseRedirect('/ui/admin/')
+    elif role == 'investor':
+        request.session['user_id'] = 3          # Jade Torres — Investor
+        request.session['permission_level'] = 'Investor'
+        return HttpResponseRedirect('/ui/dashboard/')
+    return HttpResponseRedirect('/ui/login/')

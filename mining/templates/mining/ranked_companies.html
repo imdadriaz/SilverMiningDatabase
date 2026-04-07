@@ -1,0 +1,51 @@
+{% extends "mining/base.html" %}
+{% load static %}
+{% block title %}Ranked companies{% endblock %}
+{% block body_attrs %}data-page="ranked_companies"{% endblock %}
+{% block content %}
+<div class="mb-4">
+  <h1 class="sm-page-title h2">Ranked companies</h1>
+  <p class="sm-muted mb-0">Silver miners ordered by composite score. Use the filters below to narrow results.</p>
+</div>
+<form id="rankedFilters" class="card sm-card mb-4">
+  <div class="card-body row g-3 align-items-end">
+    <div class="col-md-4">
+      <label class="form-label" for="filterSearch">Search</label>
+      <input type="text" class="form-control" id="filterSearch" name="search" placeholder="Ticker or name" autocomplete="off">
+    </div>
+    <div class="col-md-2">
+      <label class="form-label" for="filterMaxAisc">Max AISC</label>
+      <input type="number" step="any" class="form-control" id="filterMaxAisc" name="max_aisc" placeholder="Optional">
+    </div>
+    <div class="col-md-2">
+      <label class="form-label" for="filterMaxDe">Max D/E</label>
+      <input type="number" step="any" class="form-control" id="filterMaxDe" name="max_debt_equity" placeholder="Optional">
+    </div>
+    <div class="col-md-2">
+      <label class="form-label" for="filterMaxPeg">Max PEG</label>
+      <input type="number" step="any" class="form-control" id="filterMaxPeg" name="max_peg" placeholder="Optional">
+    </div>
+    <div class="col-md-2 d-flex gap-2">
+      <button type="submit" class="btn btn-primary flex-grow-1">Apply</button>
+      <button type="button" class="btn btn-outline-secondary" id="btnResetFilters">Reset</button>
+    </div>
+  </div>
+</form>
+<div id="rankedRoot">
+  <div class="sm-table-wrap">
+    <table class="table table-bordered bg-white">
+      <thead class="table-light">
+        <tr>
+          <th>Ticker</th>
+          <th>Company name</th>
+          <th>Rank</th>
+          <th>Score</th>
+        </tr>
+      </thead>
+      <tbody id="companiesTableBody"></tbody>
+    </table>
+  </div>
+  <div id="rankedEmpty" class="sm-empty border rounded bg-white d-none">No companies match your filters.</div>
+</div>
+{% endblock %}
+{% block extra_js %}<script src="{% static 'mining/js/investor.js' %}"></script>{% endblock %}

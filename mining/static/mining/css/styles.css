@@ -1,0 +1,22 @@
+/* Silver Miner — layout extras (load after app.css in base.html) */
+
+.navbar-dark .navbar-brand {
+  letter-spacing: 0.02em;
+}
+
+.nav-link.active {
+  font-weight: 600;
+}
+
+.sm-page-title {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.sm-muted {
+  color: var(--bs-secondary-color);
+}
+
+.sm-table-wrap {
+  overflow-x: auto;
+}

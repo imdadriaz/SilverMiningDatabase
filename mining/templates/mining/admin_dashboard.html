@@ -1,0 +1,39 @@
+{% extends "mining/base.html" %}
+{% load static %}
+{% block title %}Admin dashboard{% endblock %}
+{% block body_attrs %}data-page="admin_dashboard"{% endblock %}
+{% block content %}
+<div id="adminAccessDenied" class="alert alert-warning d-none" role="alert">Admin access required.</div>
+<div class="mb-4">
+  <h1 class="sm-page-title h2">Admin dashboard</h1>
+  <p class="sm-muted mb-0">Overview of the Silver Mining Database system.</p>
+</div>
+<div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <div class="card sm-card border shadow-sm bg-white">
+      <div class="card-body">
+        <div class="small text-body-secondary">Companies</div>
+        <div class="sm-stat-value" id="statCompanies">—</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card sm-card border shadow-sm bg-white">
+      <div class="card-body">
+        <div class="small text-body-secondary">Investors</div>
+        <div class="sm-stat-value" id="statInvestors">—</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card sm-card border shadow-sm bg-white">
+      <div class="card-body">
+        <div class="small text-body-secondary">Pending approvals</div>
+        <div class="sm-stat-value" id="statPending">—</div>
+      </div>
+    </div>
+  </div>
+</div>
+<p class="text-body-secondary small">Use the navigation to manage companies, investors, metrics, stock prices, and production.</p>
+{% endblock %}
+{% block extra_js %}<script src="{% static 'mining/js/admin.js' %}"></script>{% endblock %}

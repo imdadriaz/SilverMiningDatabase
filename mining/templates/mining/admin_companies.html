@@ -1,0 +1,46 @@
+{% extends "mining/base.html" %}
+{% load static %}
+{% block title %}Companies{% endblock %}
+{% block body_attrs %}data-page="admin_companies"{% endblock %}
+{% block content %}
+<div id="adminAccessDenied" class="alert alert-warning d-none" role="alert">Admin access required.</div>
+<div class="mb-4 d-flex flex-wrap justify-content-between gap-2 align-items-center">
+  <div>
+    <h1 class="sm-page-title h2 mb-0">Companies</h1>
+    <p class="sm-muted mb-0">Add, rename, or remove mining companies.</p>
+  </div>
+  <a class="btn btn-primary" href="{% url 'ui_admin_company_add' %}">Add company</a>
+</div>
+<div class="sm-table-wrap">
+  <table class="table table-bordered bg-white">
+    <thead class="table-light">
+      <tr>
+        <th>Ticker</th>
+        <th>Company name</th>
+        <th class="text-end">Actions</th>
+      </tr>
+    </thead>
+    <tbody id="acTableBody"></tbody>
+  </table>
+</div>
+<div id="acEmpty" class="sm-empty border rounded bg-white d-none">No companies yet.</div>
+
+<div class="modal fade" id="modalDeleteCompany" tabindex="-1" aria-labelledby="modalDeleteCompanyLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title h5" id="modalDeleteCompanyLabel">Delete company</h2>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        Are you sure you want to delete <strong class="sm-delete-ticker"></strong> and all its related data? This action cannot be undone.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-danger btn-confirm-delete">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}<script src="{% static 'mining/js/admin.js' %}"></script>{% endblock %}

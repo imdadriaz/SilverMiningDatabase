@@ -1,0 +1,31 @@
+{% extends "mining/base.html" %}
+{% load static %}
+{% block title %}Investor dashboard{% endblock %}
+{% block body_attrs %}data-page="investor_dashboard"{% endblock %}
+{% block content %}
+<div class="mb-4">
+  <h1 class="sm-page-title h2">Investor dashboard</h1>
+  <p class="sm-muted mb-0">Welcome to the Silver Miner ranking explorer.</p>
+</div>
+<div class="row g-3">
+  <div class="col-md-6">
+    <div class="card sm-card h-100">
+      <div class="card-body">
+        <h2 class="h5 card-title">Ranked companies</h2>
+        <p class="card-text text-body-secondary small">Search and filter miners by financial metrics.</p>
+        <a class="btn btn-primary" href="{% url 'ui_ranked_companies' %}">Open ranked list</a>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card sm-card h-100">
+      <div class="card-body">
+        <h2 class="h5 card-title">Favourites</h2>
+        <p class="card-text text-body-secondary small">Companies you have saved.</p>
+        <a class="btn btn-outline-primary" href="{% url 'ui_favourites' %}">View favourites</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}<script src="{% static 'mining/js/investor.js' %}"></script>{% endblock %}

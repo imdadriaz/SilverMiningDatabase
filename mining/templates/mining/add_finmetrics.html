@@ -1,0 +1,48 @@
+{% extends "mining/base.html" %}
+{% load static %}
+{% block title %}Add financial metrics{% endblock %}
+{% block body_attrs %}data-page="add_finmetrics"{% endblock %}
+{% block content %}
+<div id="adminAccessDenied" class="alert alert-warning d-none" role="alert">Admin access required.</div>
+<div class="mb-4">
+  <h1 class="sm-page-title h2">Add financial metrics</h1>
+  <p class="sm-muted mb-0">Enter financial metrics for a company. All numeric fields are required.</p>
+</div>
+<form id="formAddFinmetrics" class="card sm-card" style="max-width: 36rem;">
+  <div class="card-body row g-3">
+    <div class="col-12">
+      <label class="form-label" for="fmAddTicker">Ticker</label>
+      <input type="text" class="form-control text-uppercase" id="fmAddTicker" required maxlength="10">
+    </div>
+    <div class="col-md-6">
+      <label class="form-label" for="fmAddAisc">AISC</label>
+      <input type="number" step="any" class="form-control" id="fmAddAisc" required>
+    </div>
+    <div class="col-md-6">
+      <label class="form-label" for="fmAddPeg">PEG</label>
+      <input type="number" step="any" class="form-control" id="fmAddPeg" required>
+    </div>
+    <div class="col-md-6">
+      <label class="form-label" for="fmAddDebt">Total debt</label>
+      <input type="number" step="any" class="form-control" id="fmAddDebt" required>
+    </div>
+    <div class="col-md-6">
+      <label class="form-label" for="fmAddDe">Debt to equity</label>
+      <input type="number" step="any" class="form-control" id="fmAddDe" required>
+    </div>
+    <div class="col-md-6">
+      <label class="form-label" for="fmAddRev">Revenue</label>
+      <input type="number" step="any" class="form-control" id="fmAddRev" required>
+    </div>
+    <div class="col-md-6">
+      <label class="form-label" for="fmAddEbitda">EBITDA</label>
+      <input type="number" step="any" class="form-control" id="fmAddEbitda" required>
+    </div>
+    <div class="col-12">
+      <button type="submit" class="btn btn-primary">Save</button>
+      <a class="btn btn-link" href="{% url 'ui_admin_finmetrics' %}">Cancel</a>
+    </div>
+  </div>
+</form>
+{% endblock %}
+{% block extra_js %}<script src="{% static 'mining/js/admin.js' %}"></script>{% endblock %}

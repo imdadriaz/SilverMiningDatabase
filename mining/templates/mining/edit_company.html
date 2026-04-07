@@ -1,0 +1,22 @@
+{% extends "mining/base.html" %}
+{% load static %}
+{% block title %}Edit {{ ticker }}{% endblock %}
+{% block body_attrs %}data-page="edit_company" data-ticker="{{ ticker|escape }}"{% endblock %}
+{% block content %}
+<div id="adminAccessDenied" class="alert alert-warning d-none" role="alert">Admin access required.</div>
+<div class="mb-4">
+  <h1 class="sm-page-title h2">Edit company</h1>
+  <p class="sm-muted mb-0">Ticker: <strong>{{ ticker }}</strong></p>
+</div>
+<form id="formEditCompany" class="card sm-card" style="max-width: 32rem;">
+  <div class="card-body">
+    <div class="mb-3">
+      <label class="form-label" for="ecName">Company name</label>
+      <input type="text" class="form-control" id="ecName" name="company_name" required maxlength="50">
+    </div>
+    <button type="submit" class="btn btn-primary">Save</button>
+    <a class="btn btn-link" href="{% url 'ui_admin_companies' %}">Cancel</a>
+  </div>
+</form>
+{% endblock %}
+{% block extra_js %}<script src="{% static 'mining/js/admin.js' %}"></script>{% endblock %}
