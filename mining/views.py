@@ -37,9 +37,6 @@ def home_view(request):
 def login(request):
     return render(request, 'login.html')
 
-def register(request):
-    return render(request, 'register.html')
-
 def favourites(request):
     return render(request, 'favourites.html')
 
@@ -110,14 +107,15 @@ def logout_view(request):
 
 
 @csrf_exempt
-@require_http_methods(["POST"])
+# @require_http_methods(["POST"])
 # POST { first_name, last_name, email, password, confirm_password }
 # 201 { message } account starts inactive until admin approves
 # 400 validation errors
 def register_view(request):
     form = RegisterForm(_body(request))
     if not form.is_valid():
-        return JsonResponse({'errors': _form_errors(form)}, status=400)
+        return render(request, 'register.html', {'form': RegisterForm})
+        # return JsonResponse({'errors': _form_errors(form)}, status=400)
 
     user = Usertab(
         user_fname = form.cleaned_data['first_name'],

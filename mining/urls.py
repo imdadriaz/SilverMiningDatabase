@@ -12,8 +12,7 @@ urlpatterns = [
     # ── Auth ──────────────────────────────────────────────────────────────────
     path('login/', views.login, name = 'login'),
     path('logout/', views.logout_view, name = 'logout'),
-    path('register/', views.register, name = 'register'),
-    path('register/message/', views.register_view, name = 'register_message'),
+    path('register/', views.register_view, name = 'register'),
 
 
     # ── Shared ────────────────────────────────────────────────────────────────
