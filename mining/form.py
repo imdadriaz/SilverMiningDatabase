@@ -22,8 +22,8 @@ class RegisterForm(forms.Form):
     first_name = forms.CharField(max_length = 50)
     last_name = forms.CharField(max_length = 50)
     email = forms.EmailField(max_length = 100)
-    password = forms.CharField(min_length = 8)
-    confirm_password = forms.CharField()
+    password = forms.CharField(min_length = 8, widget=forms.PasswordInput)
+    confirm_password = forms.CharField(min_length = 8, widget=forms.PasswordInput)
 
     def clean_email(self):
         email = self.cleaned_data['email']

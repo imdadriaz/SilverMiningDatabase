@@ -60,4 +60,36 @@
     if (loading) rootEl.classList.add('sm-loading');
     else rootEl.classList.remove('sm-loading');
   };
+
+  async function submitRegister(e) {
+    e.preventDefault();
+    var body = {
+      first_name: qs('#first_name').value,
+      last_name: qs('#last_name').value,
+      email: qs('#email').value,
+      password: qs('#password').value,
+      confirm_password: qs('#confirm_password').value,
+    };
+    var r = await window.apiPost('/register/', body);
+    if (!r.ok) {
+      window.smShowAlert(window.smFormatApiErrors(r.data), 'danger');
+      return;
+    }
+    window.smShowAlert('Registration successful. Please wait for admin approval before logging in.', 'success');
+    window.location.href = '/ui/register/';
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    var page = document.body.getAttribute('data-page');
+    // if (page === 'admin_production') loadProduction();
+    if (page === 'ui_register') {
+      var fp = qs('#formRegister');
+      if (fp) fp.addEventListener('submit', submitRegister);
+    }
+    // if (page === 'edit_production') {
+    //   loadProductionEditForm();
+    //   var fpe = qs('#formEditProduction');
+    //   if (fpe) fpe.addEventListener('submit', submitEditProduction);
+    // }
+  });
 })();
