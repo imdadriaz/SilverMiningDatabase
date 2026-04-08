@@ -165,14 +165,19 @@ CREATE TABLE UPDATESPRODUCTIONDATA (
 
 INSERT INTO USERTAB (User_FName, User_LName, User_Email, User_Password, Permission_Level)
 VALUES
-('Maad', 'Abbasi', 'maad@email.com', 'pw1', 'Investor', 1),
-('Imdad', 'Goraho', 'slee@email.com', 'pw2', 'Admin', 1),
-('Jade', 'Torres', 'jsmith@emaul.com', 'pw3', 'Investor', 1);
+('Maad', 'Abbasi', 'maad@email.com', '$2a$12$Lc74GSTsAw02yibJYzyIbOG2mznJuf729BR9dJYUtWzLxmUUqGywa', 'Investor', 1),
+('Imdad', 'Goraho', 'slee@email.com', '$2a$12$KGMlpuKFNREaVzTJ9U9EE.a9HD5S9Xcl/AAneLjd9mv/VrLG0PjHO', 'Admin', 1),
+('Jade', 'Torres', 'jsmith@emaul.com', '$2a$12$kqtaxH.I0.pf3J1YzXFhY.lwsomwtu7mydzhnIUPi/QNPf4haL7vK', 'Investor', 1);
 
 -- User_IDs will be:
 -- 1 = Maad (Investor)
 -- 2 = Imdad (Admin)
 -- 3 = Jade (Investor)
+
+-- Unhashed User_Passwords will be:
+-- 1 = password1
+-- 2 = password2
+-- 3 = password3
 
 
 INSERT INTO COMPANY (Ticker, Company_Name)

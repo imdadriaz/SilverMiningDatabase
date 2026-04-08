@@ -1,11 +1,12 @@
 {% extends "mining/base.html" %}
+{% load static %}
 {% block title %}Log in{% endblock %}
 {% block body_attrs %}data-page="auth_login"{% endblock %}
 {% block content %}
 <div class="row justify-content-center">
   <div class="col-md-8 col-lg-6">
     <h1 class="h3 mb-3">Log in</h1>
-    <form id="formLogIn" class="card sm-card" style="max-width: 32rem;">
+    <form method="POST" action="{% url 'login' %}" id="formLogIn" class="card sm-card" style="max-width: 32rem;">
       <div class="card-body">
         <div class="mb-3">
           <label class="form-label" for="liEmail">Email</label>
@@ -22,3 +23,4 @@
   </div>
 </div>
 {% endblock %}
+{% block extra_js %}<script src="{% static 'mining/js/common.js' %}"></script>{% endblock %}

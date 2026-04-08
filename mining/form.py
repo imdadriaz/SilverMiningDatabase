@@ -15,7 +15,7 @@ from .models import Company, Finmetrics, Stockprice, Productiondata, Usertab
 #validates email and password on login
 class LoginForm(forms.Form):
     email = forms.EmailField(max_length=100)
-    password = forms.CharField()
+    password = forms.CharField(min_length = 8, widget=forms.PasswordInput)
 
 #validates new investor registration checks passwords match and email is unique
 class RegisterForm(forms.Form):
