@@ -597,6 +597,23 @@
     window.location.href = '/ui/admin/production/';
   }
 
+  async function submitRegister(e) {
+    e.preventDefault();
+    var body = {
+      first_name: qs('#fname').value,
+      last_name: qs('#lname').value,
+      email: qs('#rEmail').value,
+      password: qs('#rPassword').value,
+      confirm_password: qs('#rcPassword').value,
+    };
+    var r = await window.apiPost('/register/', body);
+    if (!r.ok) {
+      window.smShowAlert(window.smFormatApiErrors(r.data), 'danger');
+      return;
+    }
+    window.smShowAlert('Registration successful. Please wait for admin approval before logging in.', 'success');
+  }
+
   document.addEventListener('DOMContentLoaded', function () {
     if (qs('#adminAccessDenied')) {
       window.requireAdminSession();
@@ -650,6 +667,10 @@
       loadProductionEditForm();
       var fpe = qs('#formEditProduction');
       if (fpe) fpe.addEventListener('submit', submitEditProduction);
+    }
+    if (page === 'ui_register') {
+      var fr = qs('#formRegister');
+      if (fr) fr.addEventListener('submit', submitRegister);
     }
   });
 })();
