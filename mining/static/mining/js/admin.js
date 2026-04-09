@@ -614,6 +614,26 @@
     window.smShowAlert('Registration successful. Please wait for admin approval before logging in.', 'success');
   }
 
+  async function submitLogin(e) {
+    e.preventDefault();
+    var body = {
+      email: qs('#liEmail').value,
+      password: qs('#liPassword').value,
+    };
+    var r = await window.apiPost('/login/', body);
+    if (!r.ok) {
+      window.smShowAlert(window.smFormatApiErrors(r.data), 'danger');
+      return;
+    }
+    window.smShowAlert('Logged in.', 'success');
+    
+    if (r.data && r.data.permission_level === 'Admin') {
+      window.location.href = '/ui/admin/';
+    } else {
+      window.location.href = '/ui/dashboard/';
+    }
+  }
+
   document.addEventListener('DOMContentLoaded', function () {
     if (qs('#adminAccessDenied')) {
       window.requireAdminSession();
@@ -671,6 +691,10 @@
     if (page === 'ui_register') {
       var fr = qs('#formRegister');
       if (fr) fr.addEventListener('submit', submitRegister);
+    }
+    if (page === 'ui_login') {
+      var fl = qs('#formLogIn');
+      if (fl) fl.addEventListener('submit', submitLogin);
     }
   });
 })();
