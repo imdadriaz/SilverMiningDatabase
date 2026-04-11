@@ -4,34 +4,41 @@
 {% block body_attrs %}data-page="ui_register"{% endblock %}
 {% block content %}
 <div class="row justify-content-center">
-  <div class="col-md-8 col-lg-6">
-    <h1 class="h3 mb-3">Register</h1>
-    <form method="POST" id="formRegister" class="card sm-card" style="max-width: 32rem;">
-      <div class="card-body">
-        <div class="mb-3">
-          <label class="form-label" for="fname">First name</label>
-          <input type="text" class="form-control" id="fname" name="first_name" required maxlength="50">
-        </div>
-        <div class="mb-3">
-          <label class="form-label" for="lname">Last name</label>
-          <input type="text" class="form-control" id="lname" name="last_name" required maxlength="50">
-        </div>
-        <div class="mb-3">
-          <label class="form-label" for="rEmail">Email</label>
-          <input type="text" class="form-control" id="rEmail" name="email" required maxlength="100">
-        </div>
-        <div class="mb-3">
-          <label class="form-label" for="rPassword">Password</label>
-          <input type="password" class="form-control" id="rPassword" name="password" required minlength="8">
-        </div>
-        <div class="mb-3">
-          <label class="form-label" for="rcPassword">Confirm password</label>
-          <input type="password" class="form-control" id="rcPassword" name="confirm_password" required minlength="8">
-        </div>
-        <button type="submit" class="btn btn-primary">Save</button>
+  <div class="col-md-8 col-lg-5">
+    <div class="mb-4">
+      <h1 class="sm-page-title h2">Register</h1>
+      <p class="sm-muted mb-0">Create an investor account. An admin must approve it before you can log in.</p>
+    </div>
+    <div class="card sm-card border shadow-sm bg-white">
+      <div class="card-body p-4">
+        <form method="POST" id="formRegister" novalidate>
+          <div class="row g-3 mb-1">
+            <div class="col-sm-6">
+              <label class="form-label small text-body-secondary" for="fname">First name</label>
+              <input type="text" class="form-control" id="fname" name="first_name" required maxlength="50" autocomplete="given-name" placeholder="First name">
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label small text-body-secondary" for="lname">Last name</label>
+              <input type="text" class="form-control" id="lname" name="last_name" required maxlength="50" autocomplete="family-name" placeholder="Last name">
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small text-body-secondary" for="rEmail">Email</label>
+            <input type="email" class="form-control" id="rEmail" name="email" required maxlength="100" autocomplete="email" inputmode="email" placeholder="you@example.com">
+          </div>
+          <div class="mb-3">
+            <label class="form-label small text-body-secondary" for="rPassword">Password</label>
+            <input type="password" class="form-control" id="rPassword" name="password" required minlength="8" autocomplete="new-password" placeholder="At least 8 characters">
+          </div>
+          <div class="mb-4">
+            <label class="form-label small text-body-secondary" for="rcPassword">Confirm password</label>
+            <input type="password" class="form-control" id="rcPassword" name="confirm_password" required minlength="8" autocomplete="new-password" placeholder="Repeat password">
+          </div>
+          <button type="submit" class="btn btn-primary">Create account</button>
+        </form>
       </div>
-    </form>
-    <p class="mb-0"><a href="{% url 'ui_login' %}">Back to log in</a></p>
+    </div>
+    <p class="text-body-secondary small mt-3 mb-0">Already have an account? <a href="{% url 'ui_login' %}">Log in</a></p>
   </div>
 </div>
 {% endblock %}

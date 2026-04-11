@@ -49,12 +49,17 @@
     </div>
   </nav>
   {% else %}
-  <nav class="navbar navbar-dark bg-primary">
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary border-bottom shadow-sm">
     <div class="container">
-      <a class="navbar-brand mb-0 fs-5" href="{% url 'ui_login' %}">Silver Miner Ranking Database</a>
-      <div class="d-flex gap-2">
-        <a class="btn btn-sm btn-outline-light" href="{% url 'ui_login' %}">Log in</a>
-        <a class="btn btn-sm btn-light" href="{% url 'ui_register' %}">Register</a>
+      <a class="navbar-brand fw-semibold" href="{% url 'ui_login' %}">Silver Mining DB</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#authNav" aria-controls="authNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="authNav">
+        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+          <li class="nav-item"><a class="nav-link {% if nav_active == 'login' %}active{% endif %}" href="{% url 'ui_login' %}">Log in</a></li>
+          <li class="nav-item"><a class="nav-link {% if nav_active == 'register' %}active{% endif %}" href="{% url 'ui_register' %}">Register</a></li>
+        </ul>
       </div>
     </div>
   </nav>

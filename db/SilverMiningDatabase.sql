@@ -163,7 +163,7 @@ CREATE TABLE UPDATESPRODUCTIONDATA (
 -- Insert Data
 -- ===============
 
-INSERT INTO USERTAB (User_FName, User_LName, User_Email, User_Password, Permission_Level)
+INSERT INTO USERTAB (User_FName, User_LName, User_Email, User_Password, Permission_Level, Is_Active)
 VALUES
 ('Maad', 'Abbasi', 'maad@email.com', '$2a$12$Lc74GSTsAw02yibJYzyIbOG2mznJuf729BR9dJYUtWzLxmUUqGywa', 'Investor', 1),
 ('Imdad', 'Goraho', 'slee@email.com', '$2a$12$KGMlpuKFNREaVzTJ9U9EE.a9HD5S9Xcl/AAneLjd9mv/VrLG0PjHO', 'Admin', 1),

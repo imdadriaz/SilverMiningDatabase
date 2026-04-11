@@ -611,7 +611,7 @@
       window.smShowAlert(window.smFormatApiErrors(r.data), 'danger');
       return;
     }
-    window.smShowAlert('Registration successful. Please wait for admin approval before logging in.', 'success');
+    window.location.href = '/ui/login/?registered=1';
   }
 
   async function submitLogin(e) {

@@ -759,11 +759,17 @@ def _render_ui(request, template, page_title, nav_mode, nav_active='', extra=Non
 
 
 def ui_login(request):
-    return _render_ui(request, 'mining/ui_login.html', 'Log in', 'auth')
+    extra = {}
+    if request.GET.get('registered') == '1':
+        extra['auth_banner'] = {
+            'type': 'success',
+            'text': 'Account created. Log in once an admin has approved your account.',
+        }
+    return _render_ui(request, 'mining/ui_login.html', 'Log in', 'auth', 'login', extra)
 
 
 def ui_register(request):
-    return _render_ui(request, 'mining/ui_register.html', 'Register', 'auth')
+    return _render_ui(request, 'mining/ui_register.html', 'Register', 'auth', 'register')
 
 
 def ui_investor_dashboard(request):
