@@ -72,6 +72,22 @@
     return true;
   };
 
+  /**
+   * Investor UI: session must be Investor; 401 → login, 403 → admin UI.
+   */
+  window.requireInvestorSession = async function () {
+    var r = await window.apiGet('/companies/');
+    if (r.status === 401) {
+      window.location.href = '/ui/login/';
+      return false;
+    }
+    if (r.status === 403) {
+      window.location.href = '/ui/admin/';
+      return false;
+    }
+    return true;
+  };
+
   document.addEventListener('click', function (e) {
     var t = e.target;
     if (t && t.id === 'btnLogout') {

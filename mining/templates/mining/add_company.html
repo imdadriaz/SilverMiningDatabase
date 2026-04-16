@@ -1,0 +1,26 @@
+{% extends "mining/base.html" %}
+{% load static %}
+{% block title %}Add company{% endblock %}
+{% block body_attrs %}data-page="add_company"{% endblock %}
+{% block content %}
+<div id="adminAccessDenied" class="alert alert-warning d-none" role="alert">Admin access required.</div>
+<div class="mb-4">
+  <h1 class="sm-page-title h2">Add company</h1>
+  <p class="sm-muted mb-0">Enter a ticker symbol and company name to register a new mining company.</p>
+</div>
+<form id="formAddCompany" class="card sm-card" style="max-width: 32rem;">
+  <div class="card-body">
+    <div class="mb-3">
+      <label class="form-label" for="acTicker">Ticker</label>
+      <input type="text" class="form-control text-uppercase" id="acTicker" name="ticker" required maxlength="10" autocomplete="off">
+    </div>
+    <div class="mb-3">
+      <label class="form-label" for="acName">Company name</label>
+      <input type="text" class="form-control" id="acName" name="company_name" required maxlength="50">
+    </div>
+    <button type="submit" class="btn btn-primary">Save</button>
+    <a class="btn btn-link" href="{% url 'ui_admin_companies' %}">Cancel</a>
+  </div>
+</form>
+{% endblock %}
+{% block extra_js %}<script src="{% static 'mining/js/admin.js' %}"></script>{% endblock %}

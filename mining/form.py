@@ -15,15 +15,15 @@ from .models import Company, Finmetrics, Stockprice, Productiondata, Usertab
 #validates email and password on login
 class LoginForm(forms.Form):
     email = forms.EmailField(max_length=100)
-    password = forms.CharField()
+    password = forms.CharField(min_length = 8, widget=forms.PasswordInput)
 
 #validates new investor registration checks passwords match and email is unique
 class RegisterForm(forms.Form):
     first_name = forms.CharField(max_length = 50)
     last_name = forms.CharField(max_length = 50)
     email = forms.EmailField(max_length = 100)
-    password = forms.CharField(min_length = 8)
-    confirm_password = forms.CharField()
+    password = forms.CharField(min_length = 8, widget=forms.PasswordInput)
+    confirm_password = forms.CharField(min_length = 8, widget=forms.PasswordInput)
 
     def clean_email(self):
         email = self.cleaned_data['email']
@@ -110,6 +110,10 @@ class StockpriceForm(forms.ModelForm):
         model = Stockprice
         fields = ['ticker', 'date_updated','previous_open', 'previous_close','fifty_two_week_high', 'fifty_two_week_low',]
 
+    def validate_unique(self):
+        # Real PK is composite (Ticker, Date_Updated); our clean() handles dupe check
+        pass
+
     def clean(self):
         cleaned = super().clean()
         ticker = cleaned.get('ticker')
@@ -165,6 +169,10 @@ class ProductiondataForm(forms.ModelForm):
     class Meta:
         model = Productiondata
         fields = ['ticker', 'period', 'silver_ounces_produced', 'notes']
+
+    def validate_unique(self):
+        # Real PK is composite (Ticker, Period); our clean() handles dupe check
+        pass
 
     def clean(self):
         cleaned = super().clean()

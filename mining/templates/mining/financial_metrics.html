@@ -1,0 +1,33 @@
+{% extends "mining/base.html" %}
+{% load static %}
+{% block title %}Financial metrics{% endblock %}
+{% block body_attrs %}data-page="admin_finmetrics"{% endblock %}
+{% block content %}
+<div id="adminAccessDenied" class="alert alert-warning d-none" role="alert">Admin access required.</div>
+<div class="mb-4 d-flex flex-wrap justify-content-between gap-2 align-items-center">
+  <div>
+    <h1 class="sm-page-title h2 mb-0">Financial metrics</h1>
+    <p class="sm-muted mb-0">Per-company financial metrics (one row per ticker).</p>
+  </div>
+  <a class="btn btn-primary" href="{% url 'ui_admin_finmetrics_add' %}">Add metrics</a>
+</div>
+<div class="sm-table-wrap">
+  <table class="table table-bordered bg-white table-sm">
+    <thead class="table-light">
+      <tr>
+        <th>Ticker</th>
+        <th>AISC</th>
+        <th>PEG</th>
+        <th>Debt</th>
+        <th>D/E</th>
+        <th>Revenue</th>
+        <th>EBITDA</th>
+        <th class="text-end">Actions</th>
+      </tr>
+    </thead>
+    <tbody id="fmTableBody"></tbody>
+  </table>
+</div>
+<div id="fmEmpty" class="sm-empty border rounded bg-white d-none">No financial metrics rows.</div>
+{% endblock %}
+{% block extra_js %}<script src="{% static 'mining/js/admin.js' %}"></script>{% endblock %}

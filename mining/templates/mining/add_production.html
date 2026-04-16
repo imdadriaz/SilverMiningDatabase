@@ -1,0 +1,36 @@
+{% extends "mining/base.html" %}
+{% load static %}
+{% block title %}Add production{% endblock %}
+{% block body_attrs %}data-page="add_production"{% endblock %}
+{% block content %}
+<div id="adminAccessDenied" class="alert alert-warning d-none" role="alert">Admin access required.</div>
+<div class="mb-4">
+  <h1 class="sm-page-title h2">Add production record</h1>
+  <p class="sm-muted mb-0">Record silver production output for a given ticker and period (e.g. Q1-2024).</p>
+</div>
+<form id="formAddProduction" class="card sm-card" style="max-width: 36rem;">
+  <div class="card-body row g-3">
+    <div class="col-md-6">
+      <label class="form-label" for="pdTicker">Ticker</label>
+      <input type="text" class="form-control text-uppercase" id="pdTicker" required maxlength="10">
+    </div>
+    <div class="col-md-6">
+      <label class="form-label" for="pdPeriod">Period</label>
+      <input type="text" class="form-control" id="pdPeriod" required maxlength="20" placeholder="e.g. Q4-2023">
+    </div>
+    <div class="col-12">
+      <label class="form-label" for="pdOz">Silver ounces produced</label>
+      <input type="number" step="any" class="form-control" id="pdOz">
+    </div>
+    <div class="col-12">
+      <label class="form-label" for="pdNotes">Notes</label>
+      <textarea class="form-control" id="pdNotes" rows="3"></textarea>
+    </div>
+    <div class="col-12">
+      <button type="submit" class="btn btn-primary">Save</button>
+      <a class="btn btn-link" href="{% url 'ui_admin_production' %}">Cancel</a>
+    </div>
+  </div>
+</form>
+{% endblock %}
+{% block extra_js %}<script src="{% static 'mining/js/admin.js' %}"></script>{% endblock %}

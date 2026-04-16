@@ -1,0 +1,63 @@
+{% extends "mining/base.html" %}
+{% load static %}
+{% block title %}{{ ticker }}: Company{% endblock %}
+{% block body_attrs %}data-page="company_details" data-ticker="{{ ticker|escape }}"{% endblock %}
+{% block content %}
+<div class="mb-4 d-flex flex-wrap gap-2 align-items-center">
+  <a class="btn btn-outline-secondary btn-sm" href="{% url 'ui_ranked_companies' %}">Back to list</a>
+  <button type="button" class="btn btn-primary btn-sm" id="btnFavourite">Toggle favourite</button>
+</div>
+<div class="mb-3">
+  <h1 class="sm-page-title h2 mb-0" id="cdTitle">Loading…</h1>
+  <p class="text-body-secondary mb-0"><span id="cdTicker"></span> · Rank <span id="cdRank">—</span> · Score <span id="cdScore">—</span></p>
+</div>
+<div class="row g-4">
+  <div class="col-lg-6">
+    <div class="card sm-card h-100">
+      <div class="card-header fw-semibold">Financial metrics</div>
+      <div class="card-body p-0">
+        <table class="table mb-0">
+          <tbody id="cdFinBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card sm-card h-100">
+      <div class="card-header fw-semibold">Stock price history</div>
+      <div class="card-body p-0 sm-table-wrap">
+        <table class="table table-sm mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Date</th>
+              <th>Open</th>
+              <th>Close</th>
+              <th>52w H</th>
+              <th>52w L</th>
+            </tr>
+          </thead>
+          <tbody id="cdStockBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-12">
+    <div class="card sm-card">
+      <div class="card-header fw-semibold">Production data</div>
+      <div class="card-body p-0 sm-table-wrap">
+        <table class="table mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Period</th>
+              <th>Oz produced</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody id="cdProdBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}<script src="{% static 'mining/js/investor.js' %}"></script>{% endblock %}

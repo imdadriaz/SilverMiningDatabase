@@ -1,0 +1,30 @@
+{% extends "mining/base.html" %}
+{% load static %}
+{% block title %}Production data{% endblock %}
+{% block body_attrs %}data-page="admin_production"{% endblock %}
+{% block content %}
+<div id="adminAccessDenied" class="alert alert-warning d-none" role="alert">Admin access required.</div>
+<div class="mb-4 d-flex flex-wrap justify-content-between gap-2 align-items-center">
+  <div>
+    <h1 class="sm-page-title h2 mb-0">Production data</h1>
+    <p class="sm-muted mb-0">Silver production by company and period.</p>
+  </div>
+  <a class="btn btn-primary" href="{% url 'ui_admin_production_add' %}">Add record</a>
+</div>
+<div class="sm-table-wrap">
+  <table class="table table-bordered bg-white">
+    <thead class="table-light">
+      <tr>
+        <th>Ticker</th>
+        <th>Period</th>
+        <th>Oz produced</th>
+        <th>Notes</th>
+        <th class="text-end">Actions</th>
+      </tr>
+    </thead>
+    <tbody id="pdTableBody"></tbody>
+  </table>
+</div>
+<div id="pdEmpty" class="sm-empty border rounded bg-white d-none">No production rows.</div>
+{% endblock %}
+{% block extra_js %}<script src="{% static 'mining/js/admin.js' %}"></script>{% endblock %}

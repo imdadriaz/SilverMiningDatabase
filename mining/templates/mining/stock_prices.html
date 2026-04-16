@@ -1,0 +1,32 @@
+{% extends "mining/base.html" %}
+{% load static %}
+{% block title %}Stock prices{% endblock %}
+{% block body_attrs %}data-page="admin_stockprices"{% endblock %}
+{% block content %}
+<div id="adminAccessDenied" class="alert alert-warning d-none" role="alert">Admin access required.</div>
+<div class="mb-4 d-flex flex-wrap justify-content-between gap-2 align-items-center">
+  <div>
+    <h1 class="sm-page-title h2 mb-0">Stock prices</h1>
+    <p class="sm-muted mb-0">One row per ticker and quote date.</p>
+  </div>
+  <a class="btn btn-primary" href="{% url 'ui_admin_stockprice_add' %}">Add record</a>
+</div>
+<div class="sm-table-wrap">
+  <table class="table table-bordered bg-white table-sm">
+    <thead class="table-light">
+      <tr>
+        <th>Ticker</th>
+        <th>Date</th>
+        <th>Open</th>
+        <th>Close</th>
+        <th>52w H</th>
+        <th>52w L</th>
+        <th class="text-end">Actions</th>
+      </tr>
+    </thead>
+    <tbody id="spTableBody"></tbody>
+  </table>
+</div>
+<div id="spEmpty" class="sm-empty border rounded bg-white d-none">No stock price rows.</div>
+{% endblock %}
+{% block extra_js %}<script src="{% static 'mining/js/admin.js' %}"></script>{% endblock %}

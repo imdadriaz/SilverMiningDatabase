@@ -1,0 +1,26 @@
+{% extends "mining/base.html" %}
+{% load static %}
+{% block title %}Favourites{% endblock %}
+{% block body_attrs %}data-page="favourites"{% endblock %}
+{% block content %}
+<div class="mb-4">
+  <h1 class="sm-page-title h2">Favourites</h1>
+  <p class="sm-muted mb-0">Companies you have saved as favourites.</p>
+</div>
+<div class="sm-table-wrap">
+  <table class="table table-bordered bg-white">
+    <thead class="table-light">
+      <tr>
+        <th>Ticker</th>
+        <th>Company</th>
+        <th>Date favourited</th>
+        <th>View</th>
+        <th>Remove</th>
+      </tr>
+    </thead>
+    <tbody id="favTableBody"></tbody>
+  </table>
+</div>
+<div id="favEmpty" class="sm-empty border rounded bg-white d-none">No favourites yet. Browse <a href="{% url 'ui_ranked_companies' %}">ranked companies</a> and add some.</div>
+{% endblock %}
+{% block extra_js %}<script src="{% static 'mining/js/investor.js' %}"></script>{% endblock %}

@@ -1,0 +1,27 @@
+{% extends "mining/base.html" %}
+{% load static %}
+{% block title %}Manage investors{% endblock %}
+{% block body_attrs %}data-page="admin_investors"{% endblock %}
+{% block content %}
+<div id="adminAccessDenied" class="alert alert-warning d-none" role="alert">Admin access required.</div>
+<div class="mb-4">
+  <h1 class="sm-page-title h2">Manage investors</h1>
+  <p class="sm-muted mb-0">Approve pending registrations, deactivate accounts, or delete investor records.</p>
+</div>
+<div class="sm-table-wrap">
+  <table class="table table-bordered bg-white">
+    <thead class="table-light">
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="invTableBody"></tbody>
+  </table>
+</div>
+<div id="invEmpty" class="sm-empty border rounded bg-white d-none">No investor accounts.</div>
+{% endblock %}
+{% block extra_js %}<script src="{% static 'mining/js/admin.js' %}"></script>{% endblock %}

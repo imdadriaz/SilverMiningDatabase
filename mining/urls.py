@@ -1,12 +1,13 @@
 """
 URL configuration for the Silver Mining Database.
-Every URL maps to a view that returns JsonResponse.
+API routes return JsonResponse; /ui/* routes render HTML templates (data via fetch).
 """
 
 from django.urls import path
 from . import views
 
 urlpatterns = [
+    path('', views.ui_login, name = 'login'),
 
     # ── Auth ──────────────────────────────────────────────────────────────────
     path('login/', views.login_view, name = 'login'),
@@ -54,4 +55,29 @@ urlpatterns = [
     path('admin/investors/<int:user_id>/approve/', views.admin_investor_approve, name = 'admin_investor_approve'),
     path('admin/investors/<int:user_id>/deactivate/', views.admin_investor_deactivate, name = 'admin_investor_deactivate'),
     path('admin/investors/<int:user_id>/delete/', views.admin_investor_delete, name = 'admin_investor_delete'),
+
+    # ── UI (HTML templates; JSON data loaded via fetch to routes above) ───────
+    path('ui/login/', views.ui_login, name = 'ui_login'),
+    path('ui/register/', views.ui_register, name = 'ui_register'),
+    path('ui/dashboard/', views.ui_investor_dashboard, name = 'ui_investor_dashboard'),
+    path('ui/companies/', views.ui_ranked_companies, name = 'ui_ranked_companies'),
+    path('ui/companies/<str:ticker>/', views.ui_company_details, name = 'ui_company_details'),
+    path('ui/favourites/', views.ui_favourites, name = 'ui_favourites'),
+    path('ui/admin/', views.ui_admin_dashboard, name = 'ui_admin_dashboard'),
+    path('ui/admin/companies/', views.ui_admin_companies, name = 'ui_admin_companies'),
+    path('ui/admin/companies/add/', views.ui_admin_company_add, name = 'ui_admin_company_add'),
+    path('ui/admin/companies/<str:ticker>/edit/', views.ui_admin_company_edit, name = 'ui_admin_company_edit'),
+    path('ui/admin/investors/', views.ui_admin_investors, name = 'ui_admin_investors'),
+    path('ui/admin/finmetrics/', views.ui_admin_finmetrics, name = 'ui_admin_finmetrics'),
+    path('ui/admin/finmetrics/add/', views.ui_admin_finmetrics_add, name = 'ui_admin_finmetrics_add'),
+    path('ui/admin/finmetrics/<str:ticker>/edit/', views.ui_admin_finmetrics_edit, name = 'ui_admin_finmetrics_edit'),
+    path('ui/admin/stockprices/', views.ui_admin_stockprices, name = 'ui_admin_stockprices'),
+    path('ui/admin/stockprices/add/', views.ui_admin_stockprice_add, name = 'ui_admin_stockprice_add'),
+    path('ui/admin/stockprices/<str:ticker>/<str:date>/edit/', views.ui_admin_stockprice_edit, name = 'ui_admin_stockprice_edit'),
+    path('ui/admin/production/', views.ui_admin_production, name = 'ui_admin_production'),
+    path('ui/admin/production/add/', views.ui_admin_production_add, name = 'ui_admin_production_add'),
+    path('ui/admin/production/<str:ticker>/<str:period>/edit/', views.ui_admin_production_edit, name = 'ui_admin_production_edit'),
+
+    # DEV-ONLY: remove before submission
+    path('dev-login/<str:role>/', views.dev_login, name = 'dev_login'),
 ]

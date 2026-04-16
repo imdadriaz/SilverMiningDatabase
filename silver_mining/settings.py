@@ -74,11 +74,12 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'SilverMiningDatabase',
         'USER': 'root',
-        'PASSWORD': 'yourpassword',  # ← change this to your MySQL password
-        'HOST': 'localhost',
+        'PASSWORD': 'Local1234',
+        'HOST': '127.0.0.1',
         'PORT': '3306',
         'OPTIONS': {
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+            'unix_socket': '/tmp/mysql.sock',
         },
     }
 }
