@@ -74,7 +74,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'SilverMiningDatabase',
         'USER': 'root',
-        'PASSWORD': 'Local1234',
+        'PASSWORD': 'Local1234', #Set to your own password
         'HOST': '127.0.0.1',
         'PORT': '3306',
         'OPTIONS': {
