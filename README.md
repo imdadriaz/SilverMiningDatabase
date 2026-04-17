@@ -45,3 +45,8 @@ python manage.py runserver
 ```
 To open the website, follow the link:
 http://127.0.0.1:8000/
+
+To sign in with a starter account, use one of the following:
+1. maad@email.com, password1
+2. slee@email.com, password2
+3. jsmith@emaul.com, password3
