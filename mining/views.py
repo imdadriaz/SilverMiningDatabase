@@ -877,19 +877,3 @@ def ui_admin_production_edit(request, ticker, period):
         'production',
         {'ticker': ticker, 'period': unquote(period)},
     )
-
-
-# ── DEV-ONLY: bypass auth for local testing — remove before submission ────────
-from django.http import HttpResponseRedirect
-
-def dev_login(request, role):
-    """Sets session directly so the UI can be tested without the auth flow."""
-    if role == 'admin':
-        request.session['user_id'] = 2          # Imdad Goraho — Admin
-        request.session['permission_level'] = 'Admin'
-        return HttpResponseRedirect('/ui/admin/')
-    elif role == 'investor':
-        request.session['user_id'] = 3          # Jade Torres — Investor
-        request.session['permission_level'] = 'Investor'
-        return HttpResponseRedirect('/ui/dashboard/')
-    return HttpResponseRedirect('/ui/login/')

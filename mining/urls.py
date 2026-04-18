@@ -77,7 +77,4 @@ urlpatterns = [
     path('ui/admin/production/', views.ui_admin_production, name = 'ui_admin_production'),
     path('ui/admin/production/add/', views.ui_admin_production_add, name = 'ui_admin_production_add'),
     path('ui/admin/production/<str:ticker>/<str:period>/edit/', views.ui_admin_production_edit, name = 'ui_admin_production_edit'),
-
-    # DEV-ONLY: remove before submission
-    path('dev-login/<str:role>/', views.dev_login, name = 'dev_login'),
 ]
