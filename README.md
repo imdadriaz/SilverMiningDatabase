@@ -22,16 +22,16 @@ In `silver_mining/settings.py`, set the default database password to your own My
 'PASSWORD': 'Local1234', #Set to your own password
 ```
 
-Run the SQL script using one of the following methods.
+Run the SQL script using one of the following methods. This creates the database and inserts starter data.
 
-1. **Run in MySQL Workbench:** Open `db/SilverMiningDatabase.sql` and run the script.
+1. **Run in MySQL Workbench (recommended):** Open `db/SilverMiningDatabase.sql` and run the script.
 
 2. **Run in terminal:**
 ```bash
 mysql -u root -p < db/SilverMiningDatabase.sql
 ```
 
-This creates the database and inserts starter data. Next, make migrations:
+Next, make migrations:
 ```bash
 python manage.py makemigrations
 python manage.py migrate
@@ -47,6 +47,5 @@ To open the website, follow the link:
 http://127.0.0.1:8000/
 
 To sign in with a starter account, use one of the following:
-1. maad@email.com, password1
-2. slee@email.com, password2
-3. jsmith@emaul.com, password3
+1. **Investor:** maad@email.com, password1
+2. **Admin:** slee@email.com, password2
